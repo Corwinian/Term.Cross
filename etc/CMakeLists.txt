@@ -1,0 +1,8 @@
+#INSTALL(FILES ${HEADERS} DESTINATION include)
+project(ETC)
+cmake_minimum_required(VERSION 2.6)
+
+message("ETC")
+
+#INSTALL(DIRECTORY cfg DESTINATION data PATTERN "*.svn" EXCLUDE)
+INSTALL(DIRECTORY cfg DESTINATION . PATTERN "*.svn" EXCLUDE)

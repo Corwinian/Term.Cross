@@ -1,0 +1,127 @@
+типа попытка заменить sprintf для строк.
+пока забил на это.
+
+
+int printHex(string dst, long val, int width){
+	static char* hexch = "0123456789ABCDEF";
+	int i, n = 0;
+	if (width == 0) {
+		while( (val >> (4*width)) && (width < (int) (2*sizeof(val))) ) width++;
+		if (width == 0) width = 1;
+	}
+	for ( i = 4*(width-1); i >= 0; i -= 4, n++ )
+		dst.push_back(hexch[(val >> i) & 0xF]);
+	return n;
+}
+
+void printDec(string dst, long val, int width, bool negative = false) {
+	long divisor;
+	int digits, extra;
+
+	/* estimate number of spaces and digits */
+	for (divisor = 1, digits = 1; val/divisor >= 10; divisor *= 10, digits++);
+
+	if (negative) digits ++;
+	extra = 0;
+	/* print spaces */
+	for ( ; digits < width; digits++ ) {
+		extra ++;
+		dst.push_back(' ');
+	}
+
+	if (negative) dst.push_back('-');
+	/* print digits */
+	do {
+		dst.push_back(((val/divisor) % 10) + '0');
+	} while (divisor /= 10);
+
+}
+
+void printString(string dst, char* s, int width){
+    int n = 0;
+    while (*s) { dst.push_back(*s++); n++; }
+    while (n < width) { dst.push_back(' '); n++; }
+}
+
+void formatStr(string dst, const char* format_p, va_list args){
+	const char* format = format_p;
+	int n = 0;
+	int i = 0;
+	int width = 8;
+
+#define arg(x) va_arg(args, x)
+
+	/* sanity check */
+	if (format == NULL) return 0;
+
+	while (*format) {
+		switch (*(format)){
+			case '%':
+				width = 0;
+reentry:		;
+				switch (*(++format))     {
+					/* modifiers */
+					case '0':
+					case '1':
+					case '2':
+					case '3':
+					case '4':
+					case '5':
+					case '6':
+					case '7':
+					case '8':
+					case '9':
+						width = width*10 + (*format)-'0';
+						goto reentry;
+					case 'l':
+						goto reentry;
+					case 'c':
+						dst.push_back(arg(int));
+						break;
+					case 'd': {
+						long val = arg(long);
+						bool negative = false;
+						if (val < 0) {
+							negative = true;
+							val = -val;
+						}
+						printDec(dst, val, width, negative);
+						break;
+					}
+					case 'u':
+						printDec(dst, arg(long), width);
+						break;
+					case 'p':
+						width = sizeof (void*) * 2;
+					case 'x':
+						printHex(arg(long), width);
+						break;
+					case 's': {
+						char* s = arg(char*);
+						if (s)
+							printString(dst, s, width);
+						else
+							printString(dst, "(null)", width);
+					}
+					break;
+					case '%':
+						dst.push_back('%');
+						format++;
+						continue;
+					default:
+						printString(dst, "?", 0);
+						break;
+				};
+				i++;
+				break;
+					default:
+						putc(*format);
+						n++;
+						if(*format == '\n')
+							putc('\r');
+						break;
+		}
+		format++;
+	}
+	return n;
+}

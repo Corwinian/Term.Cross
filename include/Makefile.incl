@@ -1,0 +1,5 @@
+#
+
+cxxflags := -Wall -fmessage-length=0 -fPIC -m32
+loadccflags := -m32
+cxx := x86_64-pc-linux-gnu-c++-3.4.6

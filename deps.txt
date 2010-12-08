@@ -1,0 +1,11 @@
+c_lib:
+log:
+nrc:
+hrpt: c_lib
+tgdb: c_lib
+y_util: c_lib
+b0: c_lib y_util
+orbmodel: y_util c_lib
+noaautil: c_lib hrpt log orbmodel y_util
+sd_util: c_lib log orbmodel
+aufitchip: c_lib orbmodel y_util tgdb nrc log

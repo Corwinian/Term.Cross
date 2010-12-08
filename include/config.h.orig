@@ -1,0 +1,61 @@
+#ifndef CONFIG_H_
+#define CONFIG_H_
+
+#define LOG_FORMAT "%d %t %e %m"
+typedef unsigned char byte;
+#define BYTE byte
+
+#if defined __CYGWIN32__
+
+#include <limits.h>
+#define DIRD '/'					//dir delimeter
+#define PATHD ':'					//path delimeter
+#define MAX_PATH PATH_MAX
+#define MAX_FNAME NAME_MAX
+#define MAX_EXT NAME_MAX
+#define MAX_DIR NAME_MAX
+#define MAX_DRIVE (3)
+#define STRCASECMP
+
+#elif defined __MINGW32__
+
+#define DIRD '\\'					//dir delimeter
+#define PATHD ';'					//path delimeter
+#define HAVE_DRIVE					// have A:, B: ,C: etc.
+#define MAX_PATH        (260)
+#define MAX_DRIVE      (3)
+#define MAX_DIR        (256)
+#define MAX_FNAME      (256)
+#define MAX_EXT        (256)
+#define STRICMP
+
+#elif defined __EMX__         // OS/2 emx gcc
+
+#define DIRD '\\'					//dir delimeter
+#define PATHD ';'					//path delimeter
+#define HAVE_DRIVE					// have A:, B: ,C: etc.
+#define MAX_PATH       _MAX_PATH
+#define MAX_DRIVE      _MAX_DRIVE
+#define MAX_DIR        _MAX_DIR
+#define MAX_FNAME      _MAX_FNAME
+#define MAX_EXT        _MAX_EXT
+//#define STRICMP
+#define STRCASECMP
+
+#elif defined unix
+
+#include <limits.h>
+#define DIRD '/'					//dir delimeter
+#define PATHD ':'					//path delimeter
+#define MAX_PATH PATH_MAX
+#define MAX_FNAME NAME_MAX
+#define MAX_EXT NAME_MAX
+#define MAX_DIR NAME_MAX
+#define MAX_DRIVE (3)
+#define STRCASECMP
+
+#else
+#error
+#endif
+
+#endif /*CONFIG_H_ */
