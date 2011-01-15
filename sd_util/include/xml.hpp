@@ -8,11 +8,11 @@ private:
 
 	char file_name[MAX_PATH];
 	FILE* file_header;
-	TCharString tags[max_number_tags];      /* Встреченные теги */
-	TCharString btags[max_number_tags];     /* Основная часть встреченных тегов */
+	string tags[max_number_tags];      /* Встреченные теги */
+	string btags[max_number_tags];     /* Основная часть встреченных тегов */
 	int number_tags;                        /* Число незавершенных тегов */
-	TCharString text;                       /* текст, идущий в составе тега */
-	TCharString tag;                        /* основная часть имени тега */
+	string text;                       /* текст, идущий в составе тега */
+	string tag;                        /* основная часть имени тега */
 	int line;
 	char ahead_char;
 	bool ahead_flag;
@@ -20,7 +20,7 @@ private:
 	char* buffer;
 	int buffer_length;
 	int current_char;
-	TCharString result;
+	string result;
 public:
 	XML( char* file_name ) throw (TAccessExc);
 	XML( char* buffer, int length ) throw (TRequestExc);
@@ -29,8 +29,8 @@ public:
 	char get_ahead_char();
 	int get_lexem() throw (TRequestExc);
 	void file_close( char* file_name );
-	TCharString & get_text( int n, char** tags ) throw (TRequestExc);
-	//    TCharString toString(){ return TCharString(buffer); }
+	string & get_text( int n, char** tags ) throw (TRequestExc);
+	//    string toString(){ return string(buffer); }
 	void toBegin() {
 		current_char = -1;
 		number_tags = 0;

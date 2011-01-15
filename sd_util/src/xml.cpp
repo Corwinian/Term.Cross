@@ -122,7 +122,7 @@ XML::~XML() {
 	free(buffer);
 }
 
-TCharString& XML::get_text( int n, char** mask )  throw (TRequestExc) {
+string& XML::get_text( int n, char** mask )  throw (TRequestExc) {
 	int l;
 	result.clear();
 	int count = 0;
@@ -134,13 +134,15 @@ TCharString& XML::get_text( int n, char** mask )  throw (TRequestExc) {
 			//            printf( "count = %d text[1] = %d %c\n", count, int(text[1]), char(text[1]) );
 			if( text[0] == '/' ) {
 				if( number_tags == 0 ) {
-					sprintf( msg, "XML::get_text  Встречен закрывающий тег <%s> для которого нет открывающего. Файл %s. Строка %d.", (const char*)text, file_name, line );
+				  #warning char *
+					sprintf( msg, "XML::get_text  Встречен закрывающий тег <%s> для которого нет открывающего. Файл %s. Строка %d.", text.c_str(), file_name, line );
 					throw TRequestExc( 1, msg );
 				}
-
-				const char * a = tag;
+#warning char *
+				const char * a = tag.c_str();
 				a++;
-				const char * b = btags[number_tags-1];
+#warning char *
+				const char * b = btags[number_tags-1].c_str();
 				if( strcmp(a,b) != 0 ) {
 					sprintf( msg, "XML::get_text  Закрыт неверный тег. Файл %s. Строка %d.", file_name, line );
 					throw TRequestExc( 2, msg );
@@ -155,8 +157,9 @@ TCharString& XML::get_text( int n, char** mask )  throw (TRequestExc) {
 			if( number_tags == n ) {
 				bool flag = true;
 				int i;
+				#warning char *
 				for( i = 0; i < number_tags; i++ ) {
-					if( strcmp( (const char*)(mask[i]), (const char*)(tags[i]) ) != 0 )
+					if( strcmp( (const char*)(mask[i]), tags[i].c_str() ) != 0 )
 						flag = false;
 				}
 				if( flag == true ) {

@@ -132,8 +132,8 @@ void TCfg::confToParams() {
 	}
 }
 
-static void protect( const TCharString &, TCharString & );
-static void strwrite(  FILE*, const TCharString& );
+static void protect( const string &, string & );
+static void strwrite(  FILE*, const string& );
 
 void TCfg::saveCfg( const char * file_name ) throw (TParamExc, TAccessExc) {
 	if( file_name ) {
@@ -149,8 +149,8 @@ void TCfg::saveCfg( const char * file_name ) throw (TParamExc, TAccessExc) {
 		throw TAccessExc( 1, "TCfg::saveCfg: ошибка открытия файла" );
 	}
 
-	TCharString sKey;     // Предоставляем экранированные версии двух полей
-	TCharString sValue;
+	string sKey;     // Предоставляем экранированные версии двух полей
+	string sValue;
 	for( cursor->setToFirst(); cursor->isValid(); cursor->setToNext()) {
 		ConfString &c = *(cursor->elementAt());
 		protect( c[posKey], sKey );
@@ -171,12 +171,15 @@ void TCfg::saveCfg( const char * file_name ) throw (TParamExc, TAccessExc) {
 	fclose( f );
 }
 
-static int cmpKey( TCharString& c, const char * pd ) {
+static int cmpKey( string& c, const char * pd ) {
+  
+  #warning заменить на нормальный код С++
+  
 #if defined STRICMP
-	return stricmp( (const char *)c, pd );
+	return stricmp( c.c_str(), pd );
 #elif defined STRCASECMP
-
-	return strcasecmp( (const char *)c, pd );
+	return strcasecmp( c.c_str(), pd ); 
+	
 #else
 #error "see tc_config.h"
 #endif
@@ -199,6 +202,7 @@ int TCfg::containsParamWithKey( const char * keyName ) throw (TParamExc) {
 }
 
 
+#warning заменть на стандартные строки с++, а не чар *
 const char * TCfg::getValue( const char * key ) throw (TParamExc, TRequestExc) {
 	if( key == 0 || key[0] == 0 ) {
 		throw TParamExc(1, "TCfg::getValue: не задано имя параметра" );
@@ -207,7 +211,7 @@ const char * TCfg::getValue( const char * key ) throw (TParamExc, TRequestExc) {
 	for( cursor->setToFirst(); cursor->isValid(); cursor->setToNext()) {
 		ConfString &c = *(cursor->elementAt());
 		if( cmpKey( c[posKey], key ) == 0 ) {
-			return c[posValue];
+			return c[posValue].c_str();
 		}
 	}
 
@@ -226,16 +230,17 @@ void TCfg::addOrReplaceParam( const char* keyName, const char* value, const char
 		ConfString &c = *(cursor->elementAt());
 		if( cmpKey( c[posKey], keyName ) == 0 ) {
 			if( value != 0 ) {
+				#warning заменить их на константы
 				if( c[posTwoSpaces].length() == 0 ) {
-					c[posTwoSpaces] = TCharString( ' ' );
+					c[posTwoSpaces] = string( " " );
 				}
 				c[posValue] = value;
 			}    // в противном случае значение параметра не изменяется
 			if( comment != 0 ) {
 				if( c[posRemChars].length() == 0 ) {
-					c[posThreeSpaces]  = TCharString( ' ' );
-					c[posRemChars]     = TCharString( '#' );
-					c[posRemOneSpaces] = TCharString( ' ' );
+					c[posThreeSpaces]  = string( " " );
+					c[posRemChars]     = string( "#" );
+					c[posRemOneSpaces] = string( " " );
 				}
 				c[posRemValue] = comment;
 			}
@@ -249,24 +254,25 @@ void TCfg::addOrReplaceParam( const char* keyName, const char* value, const char
 		cursor->setToLast();
 		ConfString &c = *(cursor->elementAt());
 		if( c[posEndOfLine].length() == 0 ) {    // В случае необходимости добавляем перевод каретки к последней строке
-			c[posEndOfLine] += '\n';
+			c[posEndOfLine] += "\n";
 		}
 	}
 
 	// Генерируем строку, которую будем вставлять
 	ConfString * pCfg = new ConfString;
 	ConfString & cfg = *pCfg;
-	cfg[posKey] = TCharString( keyName );
-	cfg[posTwoSpaces] = TCharString( ' ' );
+	cfg[posKey] = string( keyName );
+#warning константы
+	cfg[posTwoSpaces] = string( " " );
 	if( value != 0 ) {
-		cfg[posValue] = TCharString( value );
+		cfg[posValue] = string( value );
 	}    // в противном случае значение параметра остается пустым
 	if( comment != 0 ) {
-		cfg[posThreeSpaces] = TCharString( ' ' );
-		cfg[posRemChars] = TCharString( '#' );
-		cfg[posRemOneSpaces] = TCharString( ' ' );
-		cfg[posRemValue] = TCharString( comment );
-		cfg[posEndOfLine] = TCharString( "\n" );
+		cfg[posThreeSpaces] = string( " " );
+		cfg[posRemChars] = string( "#" );
+		cfg[posRemOneSpaces] = string( " " );
+		cfg[posRemValue] = string( comment );
+		cfg[posEndOfLine] = string( "\n" );
 	}
 	cfg.setIsKey();
 
@@ -320,8 +326,8 @@ const char * TCfg::getCurrentKey() throw( TRequestExc ) {
 	if( !isValid() ) {
 		throw TRequestExc( 1, "TCfg::getCurrentKey: курсор недействителен" );
 	}
-
-	return (*cursor->elementAt())[posKey];
+#warning char *
+	return (*cursor->elementAt())[posKey].c_str();
 }
 
 
@@ -330,7 +336,8 @@ const char * TCfg::getCurrentValue() throw( TRequestExc ) {
 		throw TRequestExc( 1, "TCfg::getCurrentValue: курсор недействителен" );
 	}
 
-	return (*cursor->elementAt())[posValue];
+#warning char *
+return (*cursor->elementAt())[posValue].c_str();
 }
 
 
@@ -339,7 +346,8 @@ const char * TCfg::getCurrentComment() throw( TRequestExc ) {
 		throw TRequestExc( 1, "TCfg::getCurrentComment: курсор недействителен" );
 	}
 
-	return (*cursor->elementAt())[posRemValue];
+#warning char *
+	return (*cursor->elementAt())[posRemValue].c_str();
 }
 
 
@@ -372,15 +380,16 @@ void TCfg::setCurrentComment( const char * comment ) throw( TRequestExc ) {
 
 	ConfString & c = *(cursor->elementAt());
 
+#warning константы
 	if( c[posRemChars].length() != 1 ) {
-		c[posThreeSpaces] = TCharString( ' ' );
-		c[posRemChars] = TCharString( '#' );
-		c[posRemOneSpaces] = TCharString( ' ' );
+		c[posThreeSpaces] = string( " " );
+		c[posRemChars] = string( "#" );
+		c[posRemOneSpaces] = string( " " );
 	}
 
-	c[posRemValue] = TCharString( comment );
+	c[posRemValue] = string( comment );
 	if( c[posEndOfLine].length() == 0 ) {
-		c[posEndOfLine] += '\n';
+		c[posEndOfLine] += "\n";
 	}
 
 }
@@ -422,7 +431,7 @@ void TCfg::parse( int (*getChar)(void*), void* charSource ) throw (TRequestExc) 
 				else if( c == 'r' )
 					b1[posElement] += '\r';
 				else
-					b1[posElement] += (char)c; // из-за наличия TCharString & operator += ( int ); указываем явно тип char
+					b1[posElement] += (char)c; // из-за наличия string & operator += ( int ); указываем явно тип char
 			} else {
 				b1[posElement] += (char)c; // см. выше.
 			}
@@ -504,10 +513,11 @@ static int getTChar(void * f) {
 }
 
 
-static void protect( const TCharString & source, TCharString & dest ) {
+static void protect( const string & source, string & dest ) {
 	dest.clear();
 
-	const char * s = source;
+#warning char *
+	const char * s = source.c_str();
 	char a;
 	while( (a = *s++) ) {
 		if( a == ' ' || a == '\t' || a == '#' || a == '\\' ||  a == '\r' ||  a == '\n' )
@@ -522,7 +532,8 @@ static void protect( const TCharString & source, TCharString & dest ) {
 }
 
 
-static void strwrite(  FILE* f, const TCharString& c ) {
-	fwrite( (const char *)c, 1, c.length(), f );
+static void strwrite(  FILE* f, const string& c ) {
+#warning заменить на с++ код
+	fwrite( c.c_str(), 1, c.length(), f );
 }
 

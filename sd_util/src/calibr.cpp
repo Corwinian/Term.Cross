@@ -286,7 +286,8 @@ void calibr_processing(
 		char *mask[] =
 			{mask1, (char*)"CHAN 3"};
 
-		TCharString* s;
+		#warning указатель
+		string* s;
 
 		sprintf( mask[0], "SAT %d", sat);
 
@@ -676,7 +677,7 @@ void albcof( int sat, int chan, XML & xml, TAlbedoCalParams & p ) throw ( int ) 
 	char mask2[20];
 	char *mask[] = {mask1, mask2, (char*)"ALBCOF"};
 
-	TCharString s;
+	string s;
 
 	sprintf(mask[0], "SAT %d", sat);
 	if (chan < 3)
@@ -699,7 +700,8 @@ void albcof( int sat, int chan, XML & xml, TAlbedoCalParams & p ) throw ( int ) 
 		throw 1;
 	}
 
-	int n_params = sscanf( s.operator const char* (), "%lf %lf %lf %lf", &p.slope_value, &p.intercept_value, &p.slope_value2, &p.intercept_value2 );
+#warning char*
+	int n_params = sscanf( s.c_str(), "%lf %lf %lf %lf", &p.slope_value, &p.intercept_value, &p.slope_value2, &p.intercept_value2 );
 	if (n_params == 2) {
 		p.used_additional_values = 0; // Дополнительные параметры не используются
 	} else if (n_params == 4) {
@@ -707,7 +709,8 @@ void albcof( int sat, int chan, XML & xml, TAlbedoCalParams & p ) throw ( int ) 
 	} else {
 		sprintf(msg, "в файле calibr.dat отсутствуют (или присутствуют не полностью) параметры калибровки по каналу %d спутника %d.", chan, sat );
 		logfile->error(msg);
-		sprintf(msg, "полученная из файла строка:%s", s.operator const char* ());
+		#warning char*
+		sprintf(msg, "полученная из файла строка:%s", s.c_str());
 		logfile->error(msg);
 		logfile->error( "параметрами калибровки являются два или четыре плавающих числа, разделенных пробелами.");
 		throw 1;
@@ -790,7 +793,7 @@ void ini_prt_a( TInputParams &p, double (*prt_a)[NAA] ) throw (int) {
 	char mask1[20];
 	char *mask[] = { mask1, (char*)"PRT_A" };
 
-	TCharString s;
+	string s;
 
 	sprintf(mask[0], "SAT %d", p.sat);
 
@@ -809,7 +812,8 @@ void ini_prt_a( TInputParams &p, double (*prt_a)[NAA] ) throw (int) {
 		throw 1;
 	}
 
-	char *a = s;
+	#warning Ацкое зло
+	char *a = const_cast<char *>(s.c_str());
 	char *a1;
 	for (int i = 0; i < NPRT; i++) {
 		for (int j = 0; j < NAA; j++) {
@@ -846,7 +850,7 @@ void ini_prt_a( TInputParams &p, double (*prt_a)[NAA] ) throw (int) {
 void ini_prt_b( TInputParams& p, double *prt_b ) throw (int) {
 	char mask1[20];
 	char *mask[] = { mask1, (char*)"PRT_B" };
-	TCharString s;
+	string s;
 
 	sprintf(mask[0], "SAT %d", p.sat);
 	try {
@@ -864,7 +868,8 @@ void ini_prt_b( TInputParams& p, double *prt_b ) throw (int) {
 		throw 1;
 	}
 
-	int col = sscanf( s.operator const char* (), " %lf %lf %lf %lf ",
+#warning char *
+	int col = sscanf( s.c_str(), " %lf %lf %lf %lf ",
 					  &prt_b[0], &prt_b[1], &prt_b[2], &prt_b[3]);
 	if (col != 4) {
 		sprintf(msg, "в файле calibr.dat отсутствует информация PRT_B по каналу %d спутника %d", p.chan, p.sat);
@@ -920,7 +925,7 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
 					   (char*)"NLTBL",
 					   (char*)"ITT"
 				   };
-	TCharString s;
+	string s;
 	try	{
 		p.pxml->toBegin();
 		s = p.pxml->get_text(4, mask);
@@ -938,12 +943,13 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
 							   (char*)"NLTBL",
 							   (char*)"ITT"
 						   };
-			TCharString s;
+			string s;
 			try {
 				char *rest;
 				p.pxml->toBegin();
 				s = p.pxml->get_text(4, mask);
-				c.tbl_itt_length = parseStringOfDouble(s, c.tbl_itt, 10, -1, &rest);
+				#warning char*
+				c.tbl_itt_length = parseStringOfDouble(s.c_str(), c.tbl_itt, 10, -1, &rest);
 				if (*rest) {
 					sprintf(msg, "остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
 							mask[0], mask[1], mask[2], mask[3], rest);
@@ -965,13 +971,14 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
 							   (char*)"NLTBL",
 							   (char*)"ST"
 						   };
-			TCharString s;
+			string s;
 			try {
 				char *rest;
 				p.pxml->toBegin();
 				s = p.pxml->get_text(4, mask);
+#warning char *
 				c.tbl_st_length =
-					parseStringOfDouble(s.operator const char * (), c.tbl_st, 20, -1, &rest);
+					parseStringOfDouble(s.c_str(), c.tbl_st, 20, -1, &rest);
 				if (*rest) {
 					sprintf(msg, "остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
 							mask[0], mask[1], mask[2], mask[3], rest);
@@ -993,12 +1000,13 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
 							   (char*)"NLTBL",
 							   (char*)"DATA"
 						   };
-			TCharString s;
+			string s;
 			try {
 				char *rest;
 				p.pxml->toBegin();
 				s = p.pxml->get_text(4, mask);
-				c.tbl_data_length = parseStringOfDouble(s.operator const char * (), c.tbl_data, 200, -1, &rest);
+				#warning char *
+				c.tbl_data_length = parseStringOfDouble(s.c_str(), c.tbl_data, 200, -1, &rest);
 				if (*rest) {
 					sprintf(msg, "остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
 							mask[0], mask[1], mask[2], mask[3], rest);
@@ -1041,7 +1049,8 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
 
 		if (!c.new_calibr_flag) {
 			// для спутников 9-12
-			int col = sscanf( s.operator const char * (), " %lf %lf %lf %lf %lf %lf ",
+			#warning char *
+			int col = sscanf( s.c_str(), " %lf %lf %lf %lf %lf %lf ",
 							  &(c.table[0]), &(c.table[1]), &(c.table[2]),
 							  &(c.table[3]), &(c.table[4]), &(c.table[5]) );
 			if (col != 6) {
@@ -1051,7 +1060,8 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
 			}
 		} else {
 			// Для спутников 12-14
-			int col = sscanf( s.operator const char * (), " %lf %lf %lf %lf ",
+			#warning char *
+			int col = sscanf( s.c_str(), " %lf %lf %lf %lf ",
 							  &(c.table[0]), &(c.table[1]),
 							  &(c.table[2]), &(c.table[3]) );
 			if (col != 4) {
@@ -1118,7 +1128,7 @@ void ini_nfr( TInputParams& p, T_NFR &nfr ) throw ( int ) {
 						   (char*)"FICOF",
 						   (char*)"SW"
 					   };
-		TCharString s;
+		string s;
 
 		sprintf(mask[0], "SAT %d", p.sat);
 		if (p.chan == 3 && p.chanAB == 2)
@@ -1135,10 +1145,12 @@ void ini_nfr( TInputParams& p, T_NFR &nfr ) throw ( int ) {
 			throw 1;
 		}
 
-		if ( sscanf( s.operator const char * (), " %lf ", &nfr.starting_wave) != 1 ) {
+		#warning char *
+		if ( sscanf( s.c_str(), " %lf ", &nfr.starting_wave) != 1 ) {
 			sprintf(msg, "в файле calibr.dat отсутствует информация starting wave таблицы NFR по каналу %d спутника %d", p.chan, p.sat);
 			logfile->error(msg);
-			sprintf(msg, "полученная из XML строка: %s", s.operator const char * () );
+			#warning char *
+			sprintf(msg, "полученная из XML строка: %s", s.c_str() );
 			logfile->error(msg);
 			throw 1;
 		}
@@ -1153,7 +1165,7 @@ void ini_nfr( TInputParams& p, T_NFR &nfr ) throw ( int ) {
 						   (char*)"FICOF",
 						   (char*)"INC"
 					   };
-		TCharString s;
+		string s;
 
 		sprintf(mask[0], "SAT %d", p.sat);
 		if (p.chan == 3 && p.chanAB == 2)
@@ -1176,7 +1188,8 @@ void ini_nfr( TInputParams& p, T_NFR &nfr ) throw ( int ) {
 			throw 1;
 		}
 
-		if (sscanf( s.operator const char * (), " %lf ", &nfr.increment_wave) != 1) {
+		#warning char *
+		if (sscanf( s.c_str(), " %lf ", &nfr.increment_wave) != 1) {
 			sprintf(msg, "в файле calibr.dat отсутствует информация INC таблицы NFR по каналу %d спутника %d", p.chan, p.sat);
 			logfile->error(msg);
 			throw 1;
@@ -1192,7 +1205,7 @@ void ini_nfr( TInputParams& p, T_NFR &nfr ) throw ( int ) {
 						   (char*)"FICOF",
 						   (char*)"DATA"
 					   };
-		TCharString s;
+		string s;
 
 		sprintf(mask[0], "SAT %d", p.sat);
 		if (p.chan == 3 && p.chanAB == 2)
@@ -1215,7 +1228,8 @@ void ini_nfr( TInputParams& p, T_NFR &nfr ) throw ( int ) {
 			throw 1;
 		}
 
-		char *a = s;
+#warning Ацкое зло
+		char *a =  const_cast<char*>(s.c_str());
 		char *a1;
 
 		for (int i = 0; i < NRF_LENGTH; i++) {
@@ -1636,7 +1650,7 @@ parseStringOfDouble
 результаты разбора помещает в массив data длины N.
 Можно задать ограничитель объема считываемых данных, указав limitN.
 В случае переполнения массива бросается exception
-типа TCharString.
+типа string.
 Указатель на остаток строки, который не удалось разобрать,
 помещается по адресу rest.  Если строка прочитана полностью, **rest == (char)0;
 Функция возвращает количество прочитанных чисел.

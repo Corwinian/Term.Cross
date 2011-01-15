@@ -34,7 +34,9 @@
 #include <c_lib/c_str.hpp>
 #include <c_lib/c_slst.hpp>
 #include <c_lib/c_misc.hpp>
+#include "string"
 
+using namespace std;
 // Внутр. константа.  Вынесена наружу из-за ошибки в VisuaAge C++
 const int NElementsInString = 11;
 
@@ -167,7 +169,7 @@ private:
 	public:
 		ConfString(): keyFlag(0) {}
 		;
-		TCharString& operator[] (int i ) {
+		string& operator[] (int i ) {
 			return confString[i];
 		};
 		void setIsKey() {
@@ -178,7 +180,7 @@ private:
 			return keyFlag;
 		};
 	private:
-		TCharString confString[NElementsInString];
+		string confString[NElementsInString];
 		int keyFlag;	// 1 - строка содержит ключ, 0 - строка пустая или содержит только комментарий
 	};
 
