@@ -6,9 +6,7 @@
 #include "c_lib/c_types.hpp"
 #include "c_lib/c_except.hpp"
 #include "c_lib/c_sattbl.hpp"
-#include "c_lib/c_str.hpp"
 #include "c_lib/c_slst.hpp"
-
 //#include "c_lib/c_log.hpp" //deprecated
 #include "c_lib/c_cfg.hpp"
 
@@ -18,3 +16,4 @@
 #include "c_lib/c_b0proj.hpp"
 
 #include "c_lib/c_misc.hpp"
+#include "string"
