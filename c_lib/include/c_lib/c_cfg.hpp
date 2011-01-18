@@ -31,11 +31,12 @@
 #include <tc_config.h>
 #include <c_lib/c_types.hpp>
 #include <c_lib/c_except.hpp>
-#include <c_lib/c_str.hpp>
+
 #include <c_lib/c_slst.hpp>
 #include <c_lib/c_misc.hpp>
 #include "string"
-
+#warning подумать могет перенести в другое место
+#include <memory.h>
 using namespace std;
 // Внутр. константа.  Вынесена наружу из-за ошибки в VisuaAge C++
 const int NElementsInString = 11;
