@@ -283,30 +283,33 @@ void calibr_processing(
 	// 2 --- 3B
 	if (chan == 3) {                  // Если имеем дело с третьим каналом, определяем значение chanAB
 		char mask1[20];
-		char *mask[] =
-			{mask1, (char*)"CHAN 3"};
+		char *mask[] = {mask1, (char*)"CHAN 3"};
 
-		#warning указатель
-		string* s;
-
+		
 		sprintf( mask[0], "SAT %d", sat);
 
-		try {
-			s = &(xml.get_text(2, mask));
-		} catch(TException& e) {
+		try 
+		{
+			string s = xml.get_text(2, mask);
+			
+			if (!s.empty()) 
+			{                // Строка не пуста -> есть данные по обычному третьему каналу
+				chanAB = 0;
+				logfile->debug("обычный 3-ий канал.");
+			}
+			else 
+			{
+				int dist = abs(telemetry.space_value - telemetry.target_value);
+				chanAB = (dist < 10) ? 1 : 2;
+				logfile -> debug( "результаты автоматического определения типа 3-го канала:" );
+				logfile -> debug( chanAB == 1 ? "    3B" : "    3B" );
+			}
+		} 
+		catch(TException& e) 
+		{
 			logfile->error( "ошибка разбора файла calibr.dat:" );
 			logfile->error( e.text() );
 			throw 1;
-		}
-
-		if (s->length() != 0) {                // Строка не пуста -> есть данные по обычному третьему каналу
-			chanAB = 0;
-			logfile->debug("обычный 3-ий канал.");
-		} else {
-			int dist = abs(telemetry.space_value - telemetry.target_value);
-			chanAB = (dist < 10) ? 1 : 2;
-			logfile -> debug( "результаты автоматического определения типа 3-го канала:" );
-			logfile -> debug( chanAB == 1 ? "    3B" : "    3B" );
 		}
 	}
 
