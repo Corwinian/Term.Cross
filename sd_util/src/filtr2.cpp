@@ -695,6 +695,7 @@ void readFiltrParams( TCfg &cfg, TFiltrParams &p, int satId ) throw (TException)
 void readFlg( TCfg& cfg, const char *name, int& flag ) throw (TException) {
 	const char *s;
 	//try {
+	  
 	s = cfg.getValue( name );
 	//} catch( TRequestExc &e ) {
 	//	sprintf( msg, "в конфигурационном файле отсутствует параметр %s", name );
@@ -727,6 +728,7 @@ void readDbl( TCfg& cfg, const char *name, double &val ) throw (TException) {
 	const char *s;
 	char *rest;
 	//try {
+	  
 	s = cfg.getValue( name );
 	//} catch( TRequestExc &e ) {
 	//	sprintf( msg, "в конфигурационном файле отсутствует параметр %s", name );

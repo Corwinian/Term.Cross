@@ -80,12 +80,14 @@ void TRegionFiltrCloudy :: loadRegionsforFiltrCloudyCfg( char ParametrsRegionsfo
     }
 
 // Приморье
+
     if( cfg->containsParamWithKey( "X1_REGION_FILTR_CLOUDY_PRIMORYE" ) ){
         X1Primorye = atoi( cfg->getValue( "X1_REGION_FILTR_CLOUDY_PRIMORYE" ) );
     }
     if( cfg->containsParamWithKey( "Y1_REGION_FILTR_CLOUDY_PRIMORYE" ) ){
         Y1Primorye = atoi( cfg->getValue( "Y1_REGION_FILTR_CLOUDY_PRIMORYE" ) );
     }
+ 
     if( cfg->containsParamWithKey( "X2_REGION_FILTR_CLOUDY_PRIMORYE" ) ){
         X2Primorye = atoi( cfg->getValue( "X2_REGION_FILTR_CLOUDY_PRIMORYE" ) );
     }

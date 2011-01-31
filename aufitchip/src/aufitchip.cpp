@@ -1208,7 +1208,6 @@ void loadCfgSet( char * argv0 ) {
 		print_log( "WARNING: Конфигурационный файл не найден! Установки приняты стандартными!" );
 	}
 
-
 	if( cfg->containsParamWithKey( "SourceDataDir" ) ) {
 		strncpy( fCS.fSourceDataDir, cfg->getValue( "SourceDataDir" ), MAX_PATH );
 	} else {
@@ -1220,7 +1219,6 @@ void loadCfgSet( char * argv0 ) {
 		}
 	}
 
-
 	if( cfg->containsParamWithKey( "TargetDataDir" ) ) {
 		strncpy( fCS.fTargetDataDir, cfg->getValue( "TargetDataDir" ), MAX_PATH );
 	} else {
@@ -1231,7 +1229,6 @@ void loadCfgSet( char * argv0 ) {
 			fCS.fTargetDataDir[l+1] = '\0';
 		}
 	}
-
 
 	if( cfg->containsParamWithKey( "GPCXDir" ) ) {
 		strncpy( fCS.fGPCXDir, cfg->getValue( "GPCXDir" ), MAX_PATH );
@@ -1277,7 +1274,6 @@ void loadCfgSet( char * argv0 ) {
 		}
 	}
 
-
 	if( cfg->containsParamWithKey( "ParametrsFiltrCloudyDir" ) ) {
 		strncpy( fCS.ParametrsFiltrCloudyDir, cfg->getValue( "ParametrsFiltrCloudyDir" ), MAX_PATH );
 	} else {
@@ -1289,7 +1285,6 @@ void loadCfgSet( char * argv0 ) {
 		}
 	}
 
-
 	if( cfg->containsParamWithKey( "MinMethod" ) ) {
 		fCS.fMinMethod = atoi( cfg->getValue( "MinMethod" ) );
 		if( fCS.fMinMethod != 1 && fCS.fMinMethod != 2 ) {
@@ -1298,7 +1293,6 @@ void loadCfgSet( char * argv0 ) {
 	} else {
 		fCS.fMinMethod = 2;         // Nelder-Mead
 	}
-
 
 	if( cfg->containsParamWithKey( "MinParams" ) ) {
 		strncpy( buf, cfg->getValue( "MinParams" ), COR_PARAM_NUM );
@@ -1400,7 +1394,6 @@ void loadCfgSet( char * argv0 ) {
 	} else {
 		fCS.fStatisticSignificanceThreshold = 0.4;
 	}
-
 	if( cfg->containsParamWithKey( "fLinRegresCoeff_dX" ) ) {
 		fCS.fLinRegresCoeff_dX = atof( cfg->getValue( "fLinRegresCoeff_dX" ) );
 		if( fCS.fLinRegresCoeff_dX < 0.05 || fCS.fLinRegresCoeff_dX > 1.05 ) {

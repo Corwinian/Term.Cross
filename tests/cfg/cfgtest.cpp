@@ -9,7 +9,7 @@ int main(int argc, char** argv){
 	TCfg cfg(argv[1]);
 	cfg.setToFirst();
 	while(cfg.isValid()){
-		printf("%s %s\n", cfg.getCurrentKey(), cfg.getCurrentValue());
+		printf("%s %s\n", cfg.getCurrentKey().c_str(), cfg.getCurrentValue().c_str());
 		cfg.setToNext();
 	}
 	return 0;

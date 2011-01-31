@@ -85,8 +85,10 @@ public:
 		Исключения:
 		TParamExc   --- задан нулевой ключ;
 		TRequestExc --- параметр с указанным ключем не найден.
+		
+		(возращать стринг смысла не имеет тк, для преобразования строки в число используеться char*)
 	*/
-	const char * getValue( const char * keyName ) throw (TParamExc, TRequestExc);
+	const char * getValue( const string keyName ) throw (TParamExc, TRequestExc);
 
 	/*
 		Добавление или замена параметра.
@@ -142,9 +144,9 @@ public:
 		Исключения:
 		TRequestExc --- курсор недействителен.
 	*/
-	const char* getCurrentKey(void) throw(TRequestExc);
-	const char* getCurrentValue(void) throw(TRequestExc);
-	const char* getCurrentComment(void) throw(TRequestExc);
+	const string getCurrentKey(void) throw(TRequestExc);
+	const string getCurrentValue(void) throw(TRequestExc);
+	const string getCurrentComment(void) throw(TRequestExc);
 
 	/*
 		Модификация значений ключа, значения и комментария текущего параметра.

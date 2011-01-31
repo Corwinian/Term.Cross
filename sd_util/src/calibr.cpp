@@ -462,6 +462,7 @@ void readCfg() throw (TException) {
 
 	cfg = new TCfg( path );
 
+	
 	try {
 		s = cfg->getValue( "LOG_LEVEL" );           /* допустимые значения: dump,debug,info,warning,error,fatal */
 		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(string(s))))

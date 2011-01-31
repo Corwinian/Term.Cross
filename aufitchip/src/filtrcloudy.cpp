@@ -400,7 +400,7 @@ int TFiltrCloudy::readDbl( TCfg& cfg, const char *name, double &val ) throw (TRe
     const char *s;
     char *rest;
     try {
-        s = cfg.getValue( name );
+      s = cfg.getValue( name );
     }
     catch( TRequestExc & re ){
         throw;

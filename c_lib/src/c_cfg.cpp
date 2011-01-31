@@ -171,14 +171,13 @@ void TCfg::saveCfg( const char * file_name ) throw (TParamExc, TAccessExc) {
 	fclose( f );
 }
 
-static int cmpKey( string& c, const char * pd ) {
-  
-  #warning заменить на нормальный код С++
+static int cmpKey( string& c, const string pd ) {
+
   
 #if defined STRICMP
-	return stricmp( c.c_str(), pd );
+	return stricmp( c.c_str(), pd.c_str() );
 #elif defined STRCASECMP
-	return strcasecmp( c.c_str(), pd ); 
+	return strcasecmp( c.c_str(), pd.c_str() ); 
 	
 #else
 #error "see tc_config.h"
@@ -201,13 +200,10 @@ int TCfg::containsParamWithKey( const char * keyName ) throw (TParamExc) {
 	return 0;
 }
 
-
-#warning заменть на стандартные строки с++, а не чар *
-const char * TCfg::getValue( const char * key ) throw (TParamExc, TRequestExc) {
-	if( key == 0 || key[0] == 0 ) {
+const char* TCfg::getValue( const string key ) throw (TParamExc, TRequestExc) {
+	if( key.empty()) 
 		throw TParamExc(1, "TCfg::getValue: не задано имя параметра" );
-	}
-
+	
 	for( cursor->setToFirst(); cursor->isValid(); cursor->setToNext()) {
 		ConfString &c = *(cursor->elementAt());
 		if( cmpKey( c[posKey], key ) == 0 ) {
@@ -215,11 +211,9 @@ const char * TCfg::getValue( const char * key ) throw (TParamExc, TRequestExc) {
 		}
 	}
 
-	char msg[200];
-	sprintf( msg, "TCfg::getValue: отсутствует параметр %s", strlen( key ) < 150 ? key : "с указанным именем" );
-	throw TRequestExc( 1, msg );
+	string msg = "TCfg::getValue: отсутствует параметр" +  (key.size() < 150 ? key : "с указанным именем" );
+	throw TRequestExc( 1, msg.c_str() );
 }
-
 
 void TCfg::addOrReplaceParam( const char* keyName, const char* value, const char* comment ) throw (TParamExc) {
 	if( keyName == 0 || keyName[0] == 0 ) {
@@ -322,34 +316,26 @@ void TCfg::setTo( const char * key ) throw (TParamExc, TRequestExc) {
 }
 
 
-const char * TCfg::getCurrentKey() throw( TRequestExc ) {
-	if( !isValid() ) {
+const string TCfg::getCurrentKey() throw( TRequestExc ) {
+	if( !isValid() )
 		throw TRequestExc( 1, "TCfg::getCurrentKey: курсор недействителен" );
-	}
-#warning char *
-	return (*cursor->elementAt())[posKey].c_str();
+	
+	return (*cursor->elementAt())[posKey];
 }
 
 
-const char * TCfg::getCurrentValue() throw( TRequestExc ) {
-	if( !isValid() ) {
+const string TCfg::getCurrentValue() throw( TRequestExc ) {
+	if( !isValid() ) 
 		throw TRequestExc( 1, "TCfg::getCurrentValue: курсор недействителен" );
-	}
-
-#warning char *
-return (*cursor->elementAt())[posValue].c_str();
+	return (*cursor->elementAt())[posValue];
 }
 
 
-const char * TCfg::getCurrentComment() throw( TRequestExc ) {
-	if( !isValid() ) {
+const string TCfg::getCurrentComment() throw( TRequestExc ) {
+	if( !isValid() ) 
 		throw TRequestExc( 1, "TCfg::getCurrentComment: курсор недействителен" );
-	}
-
-#warning char *
-	return (*cursor->elementAt())[posRemValue].c_str();
+	return (*cursor->elementAt())[posRemValue];
 }
-
 
 void TCfg::setCurrentKey( const char * keyName ) throw( TParamExc, TRequestExc ) {
 	if( !isValid() ) {
