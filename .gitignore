@@ -2,3 +2,4 @@
 /_build_
 .svn/
 cmake*
+/distr
