@@ -67,9 +67,9 @@ flagMaskCloudClear( false )
 		fChipList = new TChipList(); // QUANTITY_CHIPS_ON_IMAGE
 		iniChipList( fMaskChipBaseFileDir );
 	} catch( TAccessExc ae ) {
-		errorMessage( ae.text() );
+		errorMessage( ae.what() );
 	} catch( TParamExc pe ) {
-		errorMessage( pe.text() );
+		errorMessage( pe.what() );
 	}
 }
 

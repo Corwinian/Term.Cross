@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
 		readCfg( filtrParams );
 		parseCommandString( argc, argv, filtrParams );
 	} catch (TException e) {
-		fprintf( stderr, "%s\n", e.text() );
+		fprintf( stderr, "%s\n", e.what() );
 		exit(-1);
 	}
 
@@ -487,35 +487,17 @@ void readFiltrParams( TCfg &cfg, TFiltrParams &p ) throw (TException) {
 }
 
 void readFlg( TCfg& cfg, const char *name, int& flag ) throw (TException) {
-	const char *s;
-	//try {
-	  #warning char *
-	s = cfg.getValue( name );
-	//} catch( TRequestExc &e ) {
-	//	sprintf( msg, "в конфигурационном файле отсутствует параметр %s", name );
-	//	logfile->error(msg);
-	//	sprintf( msg, "сообщение класса:%s", e.text() );
-	//	logfile->error(msg);
-	//	throw;
-	//}
-	//sprintf( msg, "%s = %s", name, s );
-	//logfile->debug(msg);
+	  
+	string s = cfg.getValue( name );
 
-	if( s[0] == 0 || ( s[0] == '0' && s[1] == 0 ) ) {
-		flag = 0;
-		return;
-	}
-	if( s[0] == '1' && s[1] == 0 ) {
-		flag = 1;
-		return;
+	if ( s.size() > 1 || s[0] != '0' && s[0] != '1'){
+		#warning char *
+		char * msg;
+		sprintf( msg, "Параметр %s должен быть 0, 1 или пустым. Его значение %s", name, s.c_str() );
+		throw TException( 1, msg );
 	}
 
-	sprintf( msg, "Параметр %s должен быть 0, 1 или пустым. Его значение %s", name, s );
-	throw TException( 1, msg );
-	//logfile->error(msg);
-	//sprintf( msg, "Его значение %s", s );
-	//logfile->error(msg);
-	//return 1;
+	flag = s.empty() || s[0] - '0';
 }
 
 void readDbl( TCfg& cfg, const char *name, double &val ) throw (TException) {

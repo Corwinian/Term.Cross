@@ -5,41 +5,42 @@
 #define _C_EXCEPT_HPP_
 
 #include <c_lib/c_types.hpp>
+#include <string>
+#include <exception>
 
-class TException {
+class TException : public std::exception
+{
 public:
-	TException( int n, const char * s );
-	TException( const TException & );
-	virtual ~TException();
+	
+	TException( int n, const std::string s ):Id( n ), Text(s){}
+	TException( const TException & e)	:Id( e.Id ), Text(e.Text){}
 
-	TException & operator = ( const TException & );
-
-	int id() const {
-		return Id;
-	}
-	const char * text() const {
-		return Text;
-	}
-
+    ~TException() throw() { Text.std::string::~string();}
+	TException & operator = ( const TException &);
+	
+	int id() const {	return Id;}
+	const std::string  text() const {	return Text;}
+	const char* what() const throw() {return Text.c_str();}
+	
 private:
 	int Id;
-	char * Text;
+	std::string Text;
 };
 
 class TAccessExc : public TException {
 public:
-	TAccessExc( int n, const char * s );
-
+	TAccessExc( int n, const std::string s ):TException( n, s ) {}
 };
 
 class TParamExc : public TException {
 public:
-	TParamExc( int n, const char * s );
+	TParamExc( int n, const std::string s ):TException( n, s ) {}
 };
 
 class TRequestExc : public TException {
 public:
-	TRequestExc( int n, const char * s );
+	TRequestExc( int n, const std::string s ):TException( n, s ) {}
 };
+
 
 #endif

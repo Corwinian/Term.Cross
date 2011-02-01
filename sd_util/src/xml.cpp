@@ -156,10 +156,9 @@ string& XML::get_text( int n, char** mask )  throw (TRequestExc) {
 		} else if( l == 2 ) {
 			if( number_tags == n ) {
 				bool flag = true;
-				int i;
-				#warning char *
-				for( i = 0; i < number_tags; i++ ) {
-					if( strcmp( (const char*)(mask[i]), tags[i].c_str() ) != 0 )
+				
+				for(int i = 0; i < number_tags; i++ ) {
+					if( mask[i] != tags[i])
 						flag = false;
 				}
 				if( flag == true ) {

@@ -270,10 +270,10 @@ TFiltrCloudy::TFiltrCloudy( char ParametrsFiltrCloudyDir[MAX_PATH], double j_d, 
         readCfg( ParametrsFiltrCloudyDir, month );
     }
     catch( TAccessExc ae ){
-        errorMessage( ae.text() );
+        errorMessage( ae.what() );
     }
     catch( TRequestExc re ){
-        errorMessage( re.text() );
+        errorMessage( re.what() );
     }
 }
 

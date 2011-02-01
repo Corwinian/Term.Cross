@@ -97,7 +97,7 @@ int main( int argc, char * argv[] ) {
 		readCfg();
 		parseCommandString( argc, argv );
 	} catch (TException e) {
-		fprintf( stderr, "%s\n", e.text() );
+		fprintf( stderr, "%s\n", e.what() );
 		exit(-1);
 	}
 

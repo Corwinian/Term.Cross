@@ -200,7 +200,7 @@ int main( int argc, char * argv[] ) {
 		try {
 			fACM.result_MaskorContourChips_to_pcx( option_chips_to_pcx, fCS.fGPCXDir, inputFileName );
 		} catch( TAccessExc ae ) {
-			errorMessage( ae.text() );
+			errorMessage( ae.what() );
 		}
 
 		return 0;
@@ -251,7 +251,7 @@ int main( int argc, char * argv[] ) {
 	try {
 		print_LogFile( "OPEN_LOG_FILE", false, fDAVHRR.fChannels_forCalcGCPs[1] );
 	} catch( TAccessExc ae ) {
-		errorMessage( ae.text() );
+		errorMessage( ae.what() );
 	}
 
 	unsigned long NG = fACM.numberOfGraundChips();
@@ -306,7 +306,7 @@ int main( int argc, char * argv[] ) {
 			save_intervGCP( false, "a", fDAVHRR, fACM );
 			save_intervGCP( true, "q", fDAVHRR, fACM );
 		} catch( TAccessExc ae ) {
-			errorMessage( ae.text() );
+			errorMessage( ae.what() );
 		}
 		fACM.setControlToCheckChips();
 
@@ -332,7 +332,7 @@ int main( int argc, char * argv[] ) {
 				save_intervGCP( false, "a", fDAVHRR, fACM );
 				save_intervGCP( true, "q", fDAVHRR, fACM );
 			} catch( TAccessExc ae ) {
-				errorMessage( ae.text() );
+				errorMessage( ae.what() );
 			}
 			fACM.setControlToCheckChips();
 		}
@@ -402,7 +402,7 @@ int main( int argc, char * argv[] ) {
 		try {
 			save_intervGCP( true, "r", fDAVHRR, fACM );
 		} catch( TAccessExc ae ) {
-			errorMessage( ae.text() );
+			errorMessage( ae.what() );
 		}
 
 		// Вычисление углов положения платформы, оценок отстаточных невязок в реперных точках (по всему набору GCPs).
@@ -453,7 +453,7 @@ int main( int argc, char * argv[] ) {
 					save_intervGCP( false, "a", fDAVHRR, fACM );
 					save_intervGCP( true, "q", fDAVHRR, fACM );
 				} catch( TAccessExc ae ) {
-					errorMessage( ae.text() );
+					errorMessage( ae.what() );
 				}
 				fACM.setControlToCheckChips();
 
@@ -465,7 +465,7 @@ int main( int argc, char * argv[] ) {
 				try {
 					save_intervGCP( true, "r", fDAVHRR, fACM );
 				} catch( TAccessExc ae ) {
-					errorMessage( ae.text() );
+					errorMessage( ae.what() );
 				}
 
 				// Вычисление углов положения платформы, оценок отстаточных невязок в реперных точках (по всему набору GCPs).
@@ -524,7 +524,7 @@ int main( int argc, char * argv[] ) {
 		try {
 			save_intervGCP( true, "e", fDAVHRR, fACM );
 		} catch( TAccessExc ae ) {
-			errorMessage( ae.text() );
+			errorMessage( ae.what() );
 		}
 
 		// Вычисление углов положения платформы, оценок отстаточных невязок в реперных точках (по всему набору GCPs).
@@ -546,14 +546,14 @@ int main( int argc, char * argv[] ) {
 		save_Correction( fDAVHRR, fACM, navigProbabilityI, navigProbabilityII, centerConfig_X, centerConfig_Y );
 		fDAVHRR.saveCorToA0();
 	} catch( TAccessExc ae ) {
-		errorMessage( ae.text() );
+		errorMessage( ae.what() );
 	}
 
 	fDAVHRR.setCorrectionParams( true, TCorrectionParams( 2 ), fACM, true );
 	try {
 		save_autoGCP( false, fDAVHRR, fACM );
 	} catch( TAccessExc ae ) {
-		errorMessage( ae.text() );
+		errorMessage( ae.what() );
 	}
 
 	print_log( "Работа программы завершена!\n" );
@@ -1582,7 +1582,7 @@ void _calculateShifts_forGraundChips( TDataAVHRR & fDAVHRR, TAufitChipMask & fAC
 			try {
 				fACM.result_MaskorContour_GraundChipsorautoGCPs_to_pcx( false, mask_or_contour, fCS.fGPCXDir, inputFileName );
 			} catch( TAccessExc ae ) {
-				errorMessage( ae.text() );
+				errorMessage( ae.what() );
 			}
 		}
 
@@ -1697,7 +1697,7 @@ void calculateShifts_forGraundChips( TDataAVHRR & fDAVHRR, TAufitChipMask & fACM
 			try {
 				fACM.result_MaskorContour_GraundChipsorautoGCPs_to_pcx( false, mask_or_contour, fCS.fGPCXDir, inputFileName );
 			} catch( TAccessExc ae ) {
-				errorMessage( ae.text() );
+				errorMessage( ae.what() );
 			}
 		}
 
@@ -4413,9 +4413,9 @@ error_roll(.0), error_pitch(.0), error_yaw(.0), max_error_angles(.0) {
 		if( !flag_load )
 			loadCalibrFiles();
 	} catch( TAccessExc ae ) {
-		errorMessage( ae.text() );
+		errorMessage( ae.what() );
 	} catch( TParamExc pe ) {
-		errorMessage( pe.text() );
+		errorMessage( pe.what() );
 	}
 }
 

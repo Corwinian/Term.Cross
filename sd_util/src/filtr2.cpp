@@ -278,7 +278,7 @@ int main(int argc, char *argv[]) {
 		readCfg( cfg, filtrParams );
 		parseCommandString( argc, argv, filtrParams );
 	} catch (TException e) {
-		fprintf( stderr, "%s\n", e.text() );
+		fprintf( stderr, "%s\n", e.what() );
 		exit(-1);
 	}
 

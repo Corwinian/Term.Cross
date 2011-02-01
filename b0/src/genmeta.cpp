@@ -279,7 +279,7 @@ int main( int argc, char* argv[] ){
 		/* если задано наложение сетки и береговой линии */
 		if( isWriteNet ) writeNet( );
 	}catch( TException e ){
-		fprintf( stderr, "%s\n", e.text( ) );
+		fprintf( stderr, "%s\n", e.what());
 		closeAll( );
 		return ( e.id( ));
 	}
@@ -301,11 +301,9 @@ void writeMeta( ) throw (TException){
 
 	/* создаем ( открываем ) выходной файл */
 	FILE* outFile = fopen( metaFileName, "w" );
-	if( outFile == NULL ){
-#warning char*
-		throw TException( 2, msg.assign( "Can't open output file:" ).append(metaFileName).c_str() );
-	}
-
+	if( outFile == NULL )
+		throw TException( 2, msg.assign( "Can't open output file:" ).append(metaFileName));
+	
 	TBlk0_HRPT& hrb0 = *((TBlk0_HRPT*)unp->blk0( ));
 
 	double scan_time = (double)hrb0.b0.day + (double)hrb0.b0.dayTime/86400000.0;
@@ -545,17 +543,15 @@ void parseCommandString( int argc, char* argv[] ) throw (TException){
 			s++;
 			if( strcmp( s, "chan" ) == 0 ){
 				if( i == argc || strlen( argv[i] ) == 0 )
-					#warning char*
-					throw TException( 1, msg.assign( "Invalid param -chan" ).c_str() );
+					throw TException( 1, msg.assign( "Invalid param -chan" ));
+				
 				s = argv[i++];
 				if( isdigit( *s ) ){ // опция "-chan {1|2|3|4|5}" */
 					int t = atoi( s );
-					#warning char*
-					if( t < 1 || t > 5 ) throw TException( 1, msg.assign( "Invalid channel number: " ).append( s ).c_str() );
+					if( t < 1 || t > 5 ) throw TException( 1, msg.assign( "Invalid channel number: " ).append( s ) );
 					chNum = t - 1;
 				}
-				#warning char*
-				else throw TException( 1, msg.assign( "Invalid param -chan " ).append( s ).c_str() );
+				else throw TException( 1, msg.assign( "Invalid param -chan " ).append( s ));
 			}else if( strcmp( s, "meta" ) == 0 ){
 				isWriteMeta = true;
 			}else if( strcmp( s, "png" ) == 0 ){
@@ -564,18 +560,15 @@ void parseCommandString( int argc, char* argv[] ) throw (TException){
 				isVerbose = true;
 			}else if( strcmp( s, "dir" ) == 0 ){
 				if( i == argc || strlen( argv[i] ) == 0 )
-				  #warning char*
-					throw TException( 1, msg.assign( "Invalid param -dir" ).c_str() );
+					throw TException( 1, msg.assign( "Invalid param -dir" ));
 				outDir = argv[i++];
 			}else if( strcmp( s, "net" ) == 0 ){
 				if( i == argc || strlen( argv[i] ) == 0 )
-				  #warning char*
-					throw TException( 1, msg.assign( "Invalid param -net" ).c_str() );
+					throw TException( 1, msg.assign( "Invalid param -net" ));
 				coastFileName = argv[i++];
 				isWriteNet = true;
 			}
-			#warning char*
-			else throw TException( 1, msg.assign( "Invalid param -" ).append( s ).c_str() );
+			else throw TException( 1, msg.assign( "Invalid param -" ).append(s));
 		}else inpFile = s;
 		/*
 		} else if( i == argc ){
@@ -588,8 +581,7 @@ void parseCommandString( int argc, char* argv[] ) throw (TException){
 	if( !(isWriteMeta || isWritePng) ) isWriteMeta = isWritePng = true;
 
 	if( inpFile == NULL )
-	  #warning char*
-		throw TException( 1, msg.assign( "The input file is not specified" ).c_str() );
+		throw TException( 1, msg.assign( "The input file is not specified" ));
 }
 
 /*---------------------------------------------------------------------
