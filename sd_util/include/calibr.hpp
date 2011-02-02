@@ -3,6 +3,15 @@
 #ifndef _CALIBR_HPP_
 #define _CALIBR_HPP_
 
+#include "../strformat/strformat.hpp"
+
+//#include <cmath>
+//#include <stdarg.h>
+//#include <cstdarg>
+//#include <string>
+
+uint64_t t;
+
 #define max(x,y) fmax(x,y)
 void albcof(int, int, XML&, TAlbedoCalParams&) throw (int);
 void calcLinearConversionParams(double, TTelemetryData&, TCorrParams&, double*, double*);
@@ -20,7 +29,9 @@ short int medh(short int*, int, int);
 short int medin(short int*, int, int, int, int*);
 void navigationSystemInit(const TBlk0&, TStraightReferencer**, double*) throw (int);
 void parseCommandString( int, char * [] ) throw (TException);
+#warning удалить
 int parseStringOfDouble(const char*, double*, int, int, char**) throw (TException);
+int parseStringOfDouble(string& , double*, int, int, string::iterator*) throw (TException);
 void proccesAscent(short int*, int, int, TStraightReferencer&, double, double, double);
 void processLUT(short int*, short int*, int, short int*);
 void readBlk0() throw (int);
