@@ -29,8 +29,6 @@ short int medh(short int*, int, int);
 short int medin(short int*, int, int, int, int*);
 void navigationSystemInit(const TBlk0&, TStraightReferencer**, double*) throw (int);
 void parseCommandString( int, char * [] ) throw (TException);
-#warning удалить
-int parseStringOfDouble(const char*, double*, int, int, char**) throw (TException);
 int parseStringOfDouble(string& , double*, int, int, string::iterator*) throw (TException);
 void proccesAscent(short int*, int, int, TStraightReferencer&, double, double, double);
 void processLUT(short int*, short int*, int, short int*);

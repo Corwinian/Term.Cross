@@ -947,16 +947,18 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
                 (char*)"NLTBL",
                 (char*)"ITT"
             };
-            string s;
+
+#warning повторяющися код
             try {
-                char *rest;
-                p.pxml->toBegin();
-                s = p.pxml->get_text(4, mask);
-                c.tbl_itt_length = parseStringOfDouble(s.c_str(), c.tbl_itt, 10, -1, &rest);
-                if (*rest) {
-                    logfile->debug(strformat("остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
-                            mask[0], mask[1], mask[2], mask[3], rest));
-                }
+				p.pxml->toBegin();
+				string tmp = p.pxml->get_text(4, mask);
+				string::iterator rest = tmp.end();
+				c.tbl_itt_length = parseStringOfDouble(tmp, c.tbl_itt, 10, -1, &rest);
+				if ( rest != tmp.end() ) {
+					string rstr = tmp.substr(rest - tmp.begin());
+					logfile->debug(strformat("остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
+						mask[0], mask[1], mask[2], mask[3], rstr.c_str()));
+				}
             } catch (TException &e) {
                 logfile->error( "ошибка разбора файла calibr.dat" );
 				logfile->error(strformat("путь: <%s> <%s> <%s> <%s>", mask[0], mask[1], mask[2], mask[3]));
@@ -971,19 +973,19 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
                 (char*)"NLTBL",
                 (char*)"ST"
             };
-            string s;
+
+#warning 
             try {
-                char *rest;
-                p.pxml->toBegin();
-                s = p.pxml->get_text(4, mask);
-#warning char *
-                c.tbl_st_length =
-                    parseStringOfDouble(s.c_str(), c.tbl_st, 20, -1, &rest);
-                if (*rest) {
-                    sprintf(msg, "остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
-                            mask[0], mask[1], mask[2], mask[3], rest);
-                    logfile->debug(msg);
-                }
+               p.pxml->toBegin();
+				string tmp = p.pxml->get_text(4, mask);
+				string::iterator rest = tmp.end();
+				c.tbl_itt_length = parseStringOfDouble(tmp, c.tbl_itt, 20, -1, &rest);
+				if ( rest != tmp.end() ) {
+					string rstr = tmp.substr(rest - tmp.begin());
+					logfile->debug(strformat("остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
+						mask[0], mask[1], mask[2], mask[3], rstr.c_str()));
+				}
+                
             } catch (TException &e) {
                 logfile->error( "ошибка разбора файла calibr.dat" );
                 sprintf(msg, "путь: <%s> <%s> <%s> <%s>",
@@ -1000,18 +1002,18 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
                 (char*)"NLTBL",
                 (char*)"DATA"
             };
-            string s;
+
+#warning повторяющийся код
             try {
-                char *rest;
-                p.pxml->toBegin();
-                s = p.pxml->get_text(4, mask);
-#warning char *
-                c.tbl_data_length = parseStringOfDouble(s.c_str(), c.tbl_data, 200, -1, &rest);
-                if (*rest) {
-                    sprintf(msg, "остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
-                            mask[0], mask[1], mask[2], mask[3], rest);
-                    logfile->debug(msg);
-                }
+               p.pxml->toBegin();
+				string tmp = p.pxml->get_text(4, mask);
+				string::iterator rest = tmp.end();
+				c.tbl_itt_length = parseStringOfDouble(tmp, c.tbl_itt, 200, -1, &rest);
+				if ( rest != tmp.end() ) {
+					string rstr = tmp.substr(rest - tmp.begin());
+					logfile->debug(strformat("остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
+						mask[0], mask[1], mask[2], mask[3], rstr.c_str()));
+				}
             } catch (TException &e) {
                 logfile->error( "ошибка разбора файла calibr.dat" );
                 sprintf(msg, "путь: <%s> <%s> <%s> <%s>",
