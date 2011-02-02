@@ -700,28 +700,29 @@ void albcof( int sat, int chan, XML & xml, TAlbedoCalParams & p ) throw ( int ) 
         throw 1;
     }
 
-    if (s.length() == 0 ) {
-        sprintf(msg, "в файле calibr.dat отсутствует информация по каналу %d спутнику %d", chan, sat);
-        logfile->error(msg);
+    if (s.empty())
+	{
+        logfile->error(strformat("в файле calibr.dat отсутствует информация по каналу %d спутнику %d", chan, sat));
         throw 1;
     }
 
-#warning char*
-    int n_params = sscanf( s.c_str(), "%lf %lf %lf %lf", &p.slope_value, &p.intercept_value, &p.slope_value2, &p.intercept_value2 );
-    if (n_params == 2) {
+    int n_params = strscanf( s, "%lf %lf %lf %lf", &p.slope_value, &p.intercept_value, &p.slope_value2, &p.intercept_value2 );
+	
+    if (n_params == 2)
+	{
         p.used_additional_values = 0; // Дополнительные параметры не используются
-    } else if (n_params == 4) {
+    }
+    else if (n_params == 4)
+	{
         p.used_additional_values = 1; // Дополнительные параметры не используются
-    } else {
-        sprintf(msg, "в файле calibr.dat отсутствуют (или присутствуют не полностью) параметры калибровки по каналу %d спутника %d.", chan, sat );
-        logfile->error(msg);
-#warning char*
-        sprintf(msg, "полученная из файла строка:%s", s.c_str());
-        logfile->error(msg);
+    }
+    else
+	{   
+        logfile->error(strformat("в файле calibr.dat отсутствуют (или присутствуют не полностью) параметры калибровки по каналу %d спутника %d.", chan, sat));
+        logfile->error(strformat("полученная из файла строка:%s", s.c_str()));
         logfile->error( "параметрами калибровки являются два или четыре плавающих числа, разделенных пробелами.");
         throw 1;
     }
-
     {
         logfile->debug( "тип калибровки:" );
         logfile->debug( p.used_additional_values ?
@@ -825,8 +826,7 @@ void ini_prt_a( TInputParams &p, double (*prt_a)[NAA] ) throw (int) {
         for (int j = 0; j < NAA; j++) {
             prt_a[i][j] = strtod(a, &a1);
             if (a == a1) {
-                sprintf(msg, "в файле calibr.dat отсутствует информация PRT_A по каналу %d спутника %d", p.chan, p.sat);
-                logfile->error(msg);
+                logfile->error(strformat("в файле calibr.dat отсутствует информация PRT_A по каналу %d спутника %d", p.chan, p.sat));
                 throw 1;
             }
             a = a1;
@@ -874,12 +874,10 @@ void ini_prt_b( TInputParams& p, double *prt_b ) throw (int) {
         throw 1;
     }
 
-#warning char *
-    int col = sscanf( s.c_str(), " %lf %lf %lf %lf ",
-                      &prt_b[0], &prt_b[1], &prt_b[2], &prt_b[3]);
+    int col = strscanf( s, " %lf %lf %lf %lf ", &prt_b[0], &prt_b[1], &prt_b[2], &prt_b[3]);
+	
     if (col != 4) {
-        sprintf(msg, "в файле calibr.dat отсутствует информация PRT_B по каналу %d спутника %d", p.chan, p.sat);
-        logfile->error(msg);
+        logfile->error(strformat("в файле calibr.dat отсутствует информация PRT_B по каналу %d спутника %d", p.chan, p.sat));
         throw 1;
     }
 
@@ -954,18 +952,14 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
                 char *rest;
                 p.pxml->toBegin();
                 s = p.pxml->get_text(4, mask);
-#warning char*
                 c.tbl_itt_length = parseStringOfDouble(s.c_str(), c.tbl_itt, 10, -1, &rest);
                 if (*rest) {
-                    sprintf(msg, "остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
-                            mask[0], mask[1], mask[2], mask[3], rest);
-                    logfile->debug(msg);
+                    logfile->debug(strformat("остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
+                            mask[0], mask[1], mask[2], mask[3], rest));
                 }
             } catch (TException &e) {
                 logfile->error( "ошибка разбора файла calibr.dat" );
-                sprintf( msg, "путь: <%s> <%s> <%s> <%s>",
-                         mask[0], mask[1], mask[2], mask[3]);
-                logfile->error(msg);
+				logfile->error(strformat("путь: <%s> <%s> <%s> <%s>", mask[0], mask[1], mask[2], mask[3]));
                 logfile->error( e.text() );
                 throw 1;
             }
@@ -1055,8 +1049,7 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
 
         if (!c.new_calibr_flag) {
             // для спутников 9-12
-#warning char *
-            int col = sscanf( s.c_str(), " %lf %lf %lf %lf %lf %lf ",
+            int col = strscanf( s, " %lf %lf %lf %lf %lf %lf ",
                               &(c.table[0]), &(c.table[1]), &(c.table[2]),
                               &(c.table[3]), &(c.table[4]), &(c.table[5]) );
             if (col != 6) {
@@ -1066,8 +1059,7 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
             }
         } else {
             // Для спутников 12-14
-#warning char *
-            int col = sscanf( s.c_str(), " %lf %lf %lf %lf ",
+				int col = strscanf( s, " %lf %lf %lf %lf ",
                               &(c.table[0]), &(c.table[1]),
                               &(c.table[2]), &(c.table[3]) );
             if (col != 4) {
@@ -1150,14 +1142,9 @@ void ini_nfr( TInputParams& p, T_NFR &nfr ) throw ( int ) {
             logfile->error( e.text() );
             throw 1;
         }
-
-#warning char *
-        if ( sscanf( s.c_str(), " %lf ", &nfr.starting_wave) != 1 ) {
-            sprintf(msg, "в файле calibr.dat отсутствует информация starting wave таблицы NFR по каналу %d спутника %d", p.chan, p.sat);
-            logfile->error(msg);
-#warning char *
-            sprintf(msg, "полученная из XML строка: %s", s.c_str() );
-            logfile->error(msg);
+        if ( strscanf( s, " %lf ", &nfr.starting_wave) != 1 ) {
+			logfile->error(strformat("в файле calibr.dat отсутствует информация starting wave таблицы NFR по каналу %d спутника %d", p.chan, p.sat));
+			logfile->error(strformat("полученная из XML строка: %s", s.c_str() ));
             throw 1;
         }
     }
@@ -1188,16 +1175,8 @@ void ini_nfr( TInputParams& p, T_NFR &nfr ) throw ( int ) {
             throw 1;
         }
 
-        if (s.length() == 0) {
-            sprintf(msg, "в файле calibr.dat отсутствует информация INC таблицы NFR по каналу %d спутника %d", p.chan, p.sat);
-            logfile->error(msg);
-            throw 1;
-        }
-
-#warning char *
-        if (sscanf( s.c_str(), " %lf ", &nfr.increment_wave) != 1) {
-            sprintf(msg, "в файле calibr.dat отсутствует информация INC таблицы NFR по каналу %d спутника %d", p.chan, p.sat);
-            logfile->error(msg);
+		if (s.empty() || strscanf( s, " %lf ", &nfr.increment_wave) != 1) {
+            logfile->error(strformat("в файле calibr.dat отсутствует информация INC таблицы NFR по каналу %d спутника %d", p.chan, p.sat));
             throw 1;
         }
     }
@@ -1228,7 +1207,7 @@ void ini_nfr( TInputParams& p, T_NFR &nfr ) throw ( int ) {
             throw 1;
         }
 
-        if (s.length() == 0) {
+        if (s.empty()) {
             sprintf(msg, "в файле calibr.dat отсутствует информация DATA таблицы NFR по каналу %d спутника %d", p.chan, p.sat);
             logfile->error(msg);
             throw 1;

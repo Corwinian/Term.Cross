@@ -501,9 +501,8 @@ static int getTChar(void * f) {
 
 static void protect( const string & source, string & dest ) {
 	dest.clear();
-
-#warning char *
-	const char * s = source.c_str();
+	
+	string::const_iterator s = source.begin();
 	char a;
 	while( (a = *s++) ) {
 		if( a == ' ' || a == '\t' || a == '#' || a == '\\' ||  a == '\r' ||  a == '\n' )
@@ -516,7 +515,6 @@ static void protect( const string & source, string & dest ) {
 			dest += a;      // все остальные символы
 	}
 }
-
 
 static void strwrite(  FILE* f, const string& c ) {
 #warning заменить на с++ код
