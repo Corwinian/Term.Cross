@@ -7,12 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-using namespace std;
 
 #include <c_lib.hpp>
 #include <hrpt.hpp>
 #include <Log.hpp>
 #include "hunp.hpp"
+
+using namespace std;
+using namespace libconfig;
 
 #ifndef LOG_FORMAT
 #define LOG_FORMAT "%d %t %e %m"
@@ -124,7 +126,7 @@ int main( int argc, char * argv[] ) {
 
 	logfile->info( string("hunp.exe - ") + inputFileName );
 
-	// Инициализация распаковываемых каналов с учетом параметров в конфигурационном файле. 
+	// Инициализация распаковываемых каналов с учетом параметров в конфигурационном файле.
 	memcpy( channels, is_a_present ? channels_a : channels_cfg, sizeof( channels ) );
 
 	construct_file_names();
@@ -144,7 +146,7 @@ int main( int argc, char * argv[] ) {
 		fclose( f );
 	}
 
-	// Проверяем, чтобы входной файл имел 0-блок нового формата. 
+	// Проверяем, чтобы входной файл имел 0-блок нового формата.
 	if( bh.b0.formatType != 0xff ) {
 		logfile->error( "неправильный формат входного файла данных" );
 		exit(1);
@@ -152,7 +154,7 @@ int main( int argc, char * argv[] ) {
 
 	totalFrameNum = bh.frameNum + bh.lostFrameNum;
 
-	// Создание объекта-распаковщика. 
+	// Создание объекта-распаковщика.
 	logfile->info( "чтение входного файла данных" );
 	THRPTUnpacker* unp = NULL;
 	try {
@@ -164,13 +166,13 @@ int main( int argc, char * argv[] ) {
 
 	construct_blk0();
 
-	// если среди имеющихся в файле каналов нет выбранных для распаковки 
+	// если среди имеющихся в файле каналов нет выбранных для распаковки
 	if( !( (channels[1] && unp->channelAvailable(0)) || (channels[2] && unp->channelAvailable(1)) ||
 			(channels[3] && unp->channelAvailable(2)) || (channels[4] && unp->channelAvailable(3)) ||
 			(channels[5] && unp->channelAvailable(4)) ) )
 		goto no_present_channels_selected;
 
-	// Поочередная распаковка каналов AVHRR и запись в файлы. 
+	// Поочередная распаковка каналов AVHRR и запись в файлы.
 	for( int i = 0; i < 5; i++ ) {
 		if( !(channels[i+1] && unp->channelAvailable( i )) )
 			continue;
@@ -196,7 +198,7 @@ int main( int argc, char * argv[] ) {
 			try {
 				unp->unpackNextFrame( avhrrBuf, tlmBuf );
 			} catch( TException e ) {
-				if( e.id() != 2 ) {    // все исключения, кроме сбоя синхронизации при приёме кадра HRPT 
+				if( e.id() != 2 ) {    // все исключения, кроме сбоя синхронизации при приёме кадра HRPT
 					logfile->error( e.text() );
 					exit(1);
 				}
@@ -213,12 +215,12 @@ int main( int argc, char * argv[] ) {
 
 no_present_channels_selected:
 
-	// считаем, что если в файле есть температурный канал, то есть и соответствующие ему данные телеметрии 
+	// считаем, что если в файле есть температурный канал, то есть и соответствующие ему данные телеметрии
 	if( !( (unp->channelAvailable(2) && channels[3]) || (unp->channelAvailable(3) && channels[4])
 			|| (unp->channelAvailable(4) && channels[5]) ) )
 		goto finish;
 
-	// выделение памяти под буфера для телеметрии 
+	// выделение памяти под буфера для телеметрии
 	for( int i = 3; i <= 5; i++ ) {
 		if( channels[i] ) {
 			tlmBuf[i-3] = new uint16_t [30 * totalFrameNum];
@@ -231,13 +233,13 @@ no_present_channels_selected:
 
 	unp->setCurrentFrameNumber( 0 );
 
-	// распаковка телеметрии 
+	// распаковка телеметрии
 	logfile->info( "распаковка данных телеметрии" );
 	for( uint32_t i = 0; i < totalFrameNum; i++ ) {
 		try {
 			unp->unpackNextFrame( avhrrBuf, pt );
-		} catch( TException e ) {   // очередной кадр HRPT был принят со сбоем синхронизации 
-			if( e.id() != 2 ) {    // все исключения, кроме сбоя синхронизации при приёме кадра HRPT 
+		} catch( TException e ) {   // очередной кадр HRPT был принят со сбоем синхронизации
+			if( e.id() != 2 ) {    // все исключения, кроме сбоя синхронизации при приёме кадра HRPT
 				logfile->error( e.text() );
 				exit(1);
 			}
@@ -250,7 +252,7 @@ no_present_channels_selected:
 				pt[j] += 30;
 	}
 
-	// запись файлов телеметрии 
+	// запись файлов телеметрии
 	logfile->info( "запись файлов телеметрии" );
 	for( int i = 3; i <= 5; i++ ) {
 		if( channels[i] ) {
@@ -281,15 +283,13 @@ void atExit() {
 void readCfg() throw ( TException ) {
 	//char msg[200];
 	char path[MAX_PATH];
-	const char * s;
-	TCfg * cfg = NULL;
 
 	if((NULL == strchr(cfgName,'\\'))&&
 			(NULL == strchr(cfgName,'/'))&&
 			(NULL == strchr(cfgName,'.'))) {
 		strcpy(path,term_root);
 		int t = strlen(path);
-		// Если надо, в конце добавляем разделитель 
+		// Если надо, в конце добавляем разделитель
 		if(path[t-1]!='/'||path[t-1]!='\\'){
 			path[t] = DIRD; path[t+1] = '\0';
 		}
@@ -304,68 +304,44 @@ void readCfg() throw ( TException ) {
 		strcpy(path,cfgName);
 	}
 
-	cfg = new TCfg( path );
+	Config conf;
+	conf.readFile(path);
+	delete path;
 
-	if(cfg->containsParamWithKey( "LOG_LEVEL" )) {
-		s = cfg->getValue( "LOG_LEVEL" );           // допустимые значения: dump,debug,info,warning,error,fatal 
-		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(string(s))))
+
+	const Setting& Log = conf.getRoot()["Log"];
+
+	//string name = cfg.lookup("name");
+
+	string sLogLevel;
+	if (Log.lookupValue("level", sLogLevel))
+	{
+		#warning подмать могет передлать функцию
+		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(sLogLevel)))
 			logLevel = nsCLog::info;
 	}
-	if(cfg->containsParamWithKey("LOG_STDERR")) {
-		s = cfg->getValue( "LOG_STDERR" );           //
-		if('1' == *s)
-			useStdErr = true;
-	}
-	if(cfg->containsParamWithKey("LOG_STDOUT")) {
-		s = cfg->getValue( "LOG_STDOUT" );           //
-		if('1' == *s)
-			useStdOut = true;
-	}
-	if(cfg->containsParamWithKey("LOG_APPEND")) {
-		s = cfg->getValue( "LOG_APPEND" );           //
-		logFileName = s;
-		append = true;
-	}
-	if(cfg->containsParamWithKey("LOG_FILE")) {
-		s = cfg->getValue( "LOG_FILE" );         // имя файла 
-		logFileName = s;
+
+	Log.lookupValue("stderr", useStdErr);
+	Log.lookupValue("stdout", useStdOut);
+
+	append = Log.lookupValue("append", logFileName);
+
+	if (Log.lookupValue("file", logFileName))
 		append = false;
+
+	// допустимые значения: строки из символов '1','2','3','4','5', например "245"
+	const Setting& channels = conf.getRoot()["Unp_avhrr_channels"];
+
+	if (!channels.isArray())
+		throw TRequestExc( 100, "неправильное значение параметра Unp_avhrr_channels" );
+
+	for(int i =0; i < channels.getLength(); i++)
+	{
+		if( static_cast<int>(channels[i]) < 1 || static_cast<int>(channels[i]) > 5 )
+			TRequestExc( 100, "неправильное значение параметра Unp_avhrr_channels" );
+		channels_cfg[channels[i]] = true;
 	}
-
-	try {
-		// допустимые значения: строки из символов '1','2','3','4','5', например "245" 
-		s = cfg->getValue( "UNP_AVHRR_CHANNELS" );
-
-		// в buf формируется строка, очищенная от пробелов 
-		char * buf = new char [strlen(s) + 1];
-		const char * src = s;
-		char * dst = buf;
-		while( *src ) {
-			if( !isspace( *src ) )
-				*dst++ = *src;
-			src++;
-		}
-		*dst = '\0';
-
-		int t = atoi( buf );
-		delete [] buf;              // больше не нужен 
-		if( t <= 0 )
-			throw TRequestExc( 100, "неправильное значение параметра UNP_AVHRR_CHANNELS" );
-		while( t ) {
-			int r = t % 10;
-			if( r == 0 || r > 5 )
-				TRequestExc( 100, "неправильное значение параметра UNP_AVHRR_CHANNELS" );
-			channels_cfg[r] = true;
-			t /= 10;
-		}
-	} catch( TRequestExc e ) {
-		delete cfg;
-		throw e;
-	}
-
-	delete cfg;
 }
-
 
 void construct_file_names() {
 	char drive[MAX_DRIVE], dir[MAX_DIR], fname[MAX_FNAME], ext[MAX_EXT], s[MAX_FNAME];
@@ -390,10 +366,10 @@ void construct_file_names() {
 //}
 
 void construct_blk0() {
-	// Постоянная часть паспорта. 
+	// Постоянная часть паспорта.
 	memcpy( &ba, &bh, 62 );
 	memcpy( &bt, &bh, 62 );
-	// Коррекция: работа с файлами формата 1999 года. 
+	// Коррекция: работа с файлами формата 1999 года.
 	if( strcmp( bh.b0.satName, "NOAA" ) == 0 && (bh.b0.satId & 0xffff) == 0 ) {
 		ba.b0.satId =
 			bh.b0.satId == 0x090000 ? TSatInfoTable::sat_id_noaa_9 :
@@ -446,7 +422,7 @@ void parseCommandString( int argc, char* argv[] ) throw ( TException ) {
 						throw TException(100, "Недопустимая цифра в опции -a{1|2|3|4|5}");
 					while( t ) {
 						int r = t % 10;
-						// Недопустимая цифра в опции -a{1|2|3|4|5} 
+						// Недопустимая цифра в опции -a{1|2|3|4|5}
 						if( r == 0 || r > 5 )
 							throw TException(100, "Недопустимая цифра в опции -a{1|2|3|4|5}");
 						channels_a[r] = 1;
