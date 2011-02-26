@@ -8,6 +8,7 @@
 	содержать 15.
 -------------------------------------------------------------------------*/
 #include "h2old.hpp"
+#include <libconfig.h++>
 
 #ifndef LOG_FORMAT
 #define LOG_FORMAT "%d %t %e %m"
@@ -15,6 +16,7 @@
 
 #define KELVIN 273.16
 
+using namespace libconfig;
 
 const char useMsg[] = "\
 Утилита преобразования файлов проекций в формат TERMOS.\n\
@@ -376,7 +378,8 @@ void constructOutputFileName( ){
 void readCfg( ) throw (TException){
 	char path[MAX_PATH];
 	const char * s;
-	TCfg * cfg = NULL;
+
+
 
 	if( (NULL == strchr(cfgName, '\\')) &&
 			(NULL == strchr(cfgName, '/')) &&
@@ -399,59 +402,41 @@ void readCfg( ) throw (TException){
 		strcpy(path, cfgName);
 	}
 
-	cfg = new TCfg(path);
+	Config conf;
+	conf.readFile(path);
+	delete path;
+	//const Setting& root = cfg.getRoot();
 
+	const Setting& Log = conf.getRoot()["Log"];
 
-	try{
-		s = cfg->getValue("LOG_LEVEL"); /* допустимые значения: dump,debug,info,warning,error,fatal */
-		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(string(s))) )
+	//string name = cfg.lookup("name");
+
+	string sLogLevel;
+	if (Log.lookupValue("level", sLogLevel))
+	{
+		#warning подмать могет передлать функцию
+		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(sLogLevel)))
 			logLevel = nsCLog::info;
-	}catch( ... ){
 	}
-	try{
-		s = cfg->getValue("LOG_STDERR"); //
-		if( '1' == *s )
-			useStdErr = true;
-	}catch( ... ){
-	}
-	try{
-		s = cfg->getValue("LOG_STDOUT"); //
-		if( '1' == *s )
-			useStdOut = true;
-	}catch( ... ){
-	}
-	try{
-		s = cfg->getValue("LOG_APPEND"); //
-		logFileName = s;
-		append = true;
-	}catch( ... ){
-	}
-	try{
-		s = cfg->getValue("LOG_FILE"); /* имя файла */
-		logFileName = s;
+
+	Log.lookupValue("stderr", useStdErr);
+	Log.lookupValue("stdout", useStdOut);
+
+	append = Log.lookupValue("append", logFileName);
+
+	if (Log.lookupValue("file", logFileName))
 		append = false;
-	}catch( ... ){
-	}
 
-	//------------MODIFIED by YEROMENKO------------
-	try{
-		s = cfg->getValue("TERMOS_CONV_TEMP_STEP");
-		tempStep = atof(s);
-		tempStep_is_defined_flag = 1;
-	}catch( TRequestExc ){
-		tempStep = .125;
-	}
-	//------------MODIFIED by YEROMENKO------------
 
-	try{
-		s = cfg->getValue("TERMOS_CONV_TEMP_TRESHOLD"); // допустимые значения: "1", "2"
-		tempTreshold = atol(s);
-		tempTreshold_is_defined_flag = 1;
-	}catch( TRequestExc e ){
-		tempTreshold = -3.0;
-	}
+	try
+	{	tempStep_is_defined_flag = conf.lookupValue("termos_conv_temp_step", tempStep);}
+	catch( TRequestExc )
+	{	tempStep = .125;}
 
-	delete cfg;
+	try
+	{	tempTreshold_is_defined_flag  = conf.lookupValue("termos_conv_temp_treshold", tempTreshold);}
+	catch( TRequestExc )
+	{	tempTreshold = -3.0;}
 }
 
 void parseCommandString( int argc, char* argv[] ) throw ( TException){
