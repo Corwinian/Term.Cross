@@ -18,7 +18,7 @@ option(BUILD_SHARED_LIBS "Build with shared libs" ON)
 option(BUILD_GENMETA "Build genmeta" ON)
 
 set(TERM_CROSS_INCLUDE ${TERM_CROSS_SOURCE_DIR}/include)
-
+set(CMAKE_EXE_LINKER_FLAGS "-lconfig++")
 if(UNIX)
 	set(DIRD '/')
 	set(PATHD ':')
