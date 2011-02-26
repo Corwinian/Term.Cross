@@ -19,6 +19,7 @@
 #define LOG_FORMAT "%d %t %e %m"
 #endif
 
+using namespace libconfig;
 const char* useMsg = "\
 Использование: calibr [опции] имя_конфигурации файл_данных\n\
 файл_данных     Файл распакованных данных HRPT.\n\
@@ -441,7 +442,6 @@ void calibr_processing(
 void readCfg() throw (TException) {
     char path[MAX_PATH];
     const char * s;
-    TCfg* cfg = NULL;
 
     if ((NULL == strchr(cfgName,'\\'))&&
             (NULL == strchr(cfgName,'/'))&&
@@ -464,42 +464,29 @@ void readCfg() throw (TException) {
         strcpy(path,cfgName);
     }
 
-    cfg = new TCfg( path );
+   Config conf;
+	conf.readFile(path);
+	const Setting& Log = conf.getRoot()["Log"];
 
+	#warning повторяеться код
+	string sLogLevel;
+	if (Log.lookupValue("level", sLogLevel))
+	{
+		#warning подмать могет передлать функцию
+		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(sLogLevel)))
+			logLevel = nsCLog::info;
+	}
 
-    try {
-        s = cfg->getValue( "LOG_LEVEL" );           /* допустимые значения: dump,debug,info,warning,error,fatal */
-        if ( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(string(s))))
-            logLevel = nsCLog::info;
-    } catch (...) {}
-    try {
-        s = cfg->getValue( "LOG_STDERR" );           //
-        if ('1' == *s)
-            useStdErr = true;
-    } catch (...) {}
-    try {
-        s = cfg->getValue( "LOG_STDOUT" );           //
-        if ('1' == *s)
-            useStdOut = true;
-    } catch (...) {}
-    try {
-        s = cfg->getValue( "LOG_APPEND" );           //
-        logFileName = s;
-        append = true;
-    } catch (...) {}
-    try {
-        s = cfg->getValue( "LOG_FILE" );         /* имя файла */
-        logFileName = s;
-        append = false;
-    } catch (...) {}
-    try {
-        s = cfg->getValue( "CALIBR_ASCENT" );
-        if ('0' == *s)
-            option_ascent = false;
-        else
-            option_ascent = true; /* если что-либо другое, считаем что CALIBR_ASCENT = true */
-    } catch (...) {}
-    delete cfg;
+	Log.lookupValue("stderr", useStdErr);
+	Log.lookupValue("stdout", useStdOut);
+
+	append = Log.lookupValue("append", logFileName);
+
+	if (Log.lookupValue("file", logFileName))
+		append = false;
+	#warning "сделал пока тупо как значение"
+	conf.lookupValue("termos_conv_temp_step", option_ascent);
+		/* если что-либо другое, считаем что CALIBR_ASCENT = true */
 }
 
 void construct_file_names() {
@@ -707,7 +694,7 @@ void albcof( int sat, int chan, XML & xml, TAlbedoCalParams & p ) throw ( int ) 
     }
 
     int n_params = strscanf( s, "%lf %lf %lf %lf", &p.slope_value, &p.intercept_value, &p.slope_value2, &p.intercept_value2 );
-	
+
     if (n_params == 2)
 	{
         p.used_additional_values = 0; // Дополнительные параметры не используются
@@ -717,7 +704,7 @@ void albcof( int sat, int chan, XML & xml, TAlbedoCalParams & p ) throw ( int ) 
         p.used_additional_values = 1; // Дополнительные параметры не используются
     }
     else
-	{   
+	{
         logfile->error(strformat("в файле calibr.dat отсутствуют (или присутствуют не полностью) параметры калибровки по каналу %d спутника %d.", chan, sat));
         logfile->error(strformat("полученная из файла строка:%s", s.c_str()));
         logfile->error( "параметрами калибровки являются два или четыре плавающих числа, разделенных пробелами.");
@@ -875,7 +862,7 @@ void ini_prt_b( TInputParams& p, double *prt_b ) throw (int) {
     }
 
     int col = strscanf( s, " %lf %lf %lf %lf ", &prt_b[0], &prt_b[1], &prt_b[2], &prt_b[3]);
-	
+
     if (col != 4) {
         logfile->error(strformat("в файле calibr.dat отсутствует информация PRT_B по каналу %d спутника %d", p.chan, p.sat));
         throw 1;
@@ -974,7 +961,7 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
                 (char*)"ST"
             };
 
-#warning 
+#warning
             try {
                p.pxml->toBegin();
 				string tmp = p.pxml->get_text(4, mask);
@@ -985,7 +972,7 @@ void ini_corrParams( TInputParams &p, TCorrParams &c ) throw ( int ) {
 					logfile->debug(strformat("остались неразобранные данные в <%s> <%s> <%s> <%s>: [%s]",
 						mask[0], mask[1], mask[2], mask[3], rstr.c_str()));
 				}
-                
+
             } catch (TException &e) {
                 logfile->error( "ошибка разбора файла calibr.dat" );
                 sprintf(msg, "путь: <%s> <%s> <%s> <%s>",
