@@ -8,7 +8,7 @@
 #include "c_lib/c_sattbl.hpp"
 #include "c_lib/c_slst.hpp"
 //#include "c_lib/c_log.hpp" //deprecated
-#include "c_lib/c_cfg.hpp"
+//#include "c_lib/c_cfg.hpp"
 
 #include "c_lib/c_b0.hpp"
 #include "c_lib/c_b0gms.hpp"
@@ -17,3 +17,12 @@
 
 #include "c_lib/c_misc.hpp"
 #include "string"
+
+#include <memory.h>
+
+#include <stdlib.h>
+
+#include <libconfig.h++>
+
+
+
