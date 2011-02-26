@@ -6,7 +6,7 @@
 #include <c_lib.hpp>
 
 #include <xml.hpp>
-
+using namespace std;
 static char msg[2048];
 
 XML::XML( char* file_name ) throw (TAccessExc) {
@@ -156,7 +156,7 @@ string& XML::get_text( int n, char** mask )  throw (TRequestExc) {
 		} else if( l == 2 ) {
 			if( number_tags == n ) {
 				bool flag = true;
-				
+
 				for(int i = 0; i < number_tags; i++ ) {
 					if( mask[i] != tags[i])
 						flag = false;
