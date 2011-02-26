@@ -404,13 +404,13 @@ void readCfg( ) throw (TException){
 
 	Config conf;
 	conf.readFile(path);
-	delete path;
 	//const Setting& root = cfg.getRoot();
 
 	const Setting& Log = conf.getRoot()["Log"];
 
 	//string name = cfg.lookup("name");
 
+	#warning повторяеться код
 	string sLogLevel;
 	if (Log.lookupValue("level", sLogLevel))
 	{
