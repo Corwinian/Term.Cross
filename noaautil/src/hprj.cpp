@@ -1,11 +1,11 @@
 /*-------------------------------------------------------------------------
     hprj.cpp
- 
+
     Утилита построения проекций.
- 
+
     На вход программе может быть подан любой файл, переменная часть паспорта
     которого имеет формат TBlk0_AVHRR.
- 
+
     Для файлов калиброванных данных температурных каналов производится
     нормирование пикселов проекции, с тем чтобы минимальное значение среди
     них стало равным 0. Соответственно изменяется значение полей паспорта
@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <string>
 using namespace std;
+using namespace libconfig;
 
 #include "hprj.hpp"
 
@@ -80,7 +81,7 @@ TBlk0_Proj bp;
 double prjLon, prjLat, prjLonSize, prjLatSize;      /* в градусах */
 double prjRes;                                      /* в секундах */
 /* тип проекции: 1 - меркаторская, 2 - равнопромежуточная */
-char prjType;
+int prjType;
 
 /* размеры исходного изображения */
 //long imgSizeX;
@@ -486,7 +487,6 @@ void constructProjBlk0() {
 void readCfg() throw ( TException ) {
 	char path[MAX_PATH];
 	const char * s;
-	TCfg * cfg = NULL;
 
 	if((NULL == strchr(cfgName,'\\'))&&
 			(NULL == strchr(cfgName,'/'))&&
@@ -508,70 +508,51 @@ void readCfg() throw ( TException ) {
 		strcpy(path,cfgName);
 	}
 
-	cfg = new TCfg( path );
+	Config conf;
+	conf.readFile(path);
 
+	delete path;
+	const Setting& Log = conf.getRoot()["Log"];
 
-	try {
-		s = cfg->getValue( "LOG_LEVEL" );           /* допустимые значения: dump,debug,info,warning,error,fatal */
-		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(string(s))))
+	#warning в соседнем лежит тоже самое подмать как бы вынести
+
+	string sLogLevel;
+	if (Log.lookupValue("level", sLogLevel))
+	{
+		#warning подмать могет передлать функцию
+		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(sLogLevel)))
 			logLevel = nsCLog::info;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_STDERR" );           //
-		if('1' == *s)
-			useStdErr = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_STDOUT" );           //
-		if('1' == *s)
-			useStdOut = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_APPEND" );           //
-		logFileName = s;
-		append = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_FILE" );         /* имя файла */
-		logFileName = s;
-		append = false;
-	} catch(...) {}
-
-	try {
-		s = cfg->getValue( "PRJ_LON" );            // градусы
-		prjLon = atof( s );
-
-		s = cfg->getValue( "PRJ_LAT" );            // градусы
-		prjLat = atof( s );
-
-		s = cfg->getValue( "PRJ_LON_SIZE" );       // градусы
-		prjLonSize = atof( s );
-
-		s = cfg->getValue( "PRJ_LAT_SIZE" );        // градусы
-		prjLatSize = atof( s );
-
-		s = cfg->getValue( "PRJ_RES" );             // секунды
-		prjRes = atof( s );
-
-		s = cfg->getValue( "PRJ_TYPE" );            // "1" - меркаторская, "2" - равнопромежуточная
-		prjType = *s - '0';
-		if( prjType != 1 && prjType != 2 ) {
-			throw TRequestExc( 100, "Неправильное значение параметра PRJ_TYPE" );
-		}
-
-		s = cfg->getValue( "PRJ_MASK" );    // "0" - ничего не маскировать, "1" - маскировать сушу
-		char i = *s - '0';
-		if( i != 0 && i != 1 ) {
-			throw TRequestExc( 100, "Неправильное значение параметра PRJ_MASK" );
-		}
-		prjMask = ( i == 1 );
-
-	} catch( TRequestExc e ) {
-		delete cfg;
-		throw e;
 	}
 
-	delete cfg;
+	Log.lookupValue("stderr", useStdErr);
+	Log.lookupValue("stdout", useStdOut);
+
+	append = Log.lookupValue("append", logFileName);
+
+	if (Log.lookupValue("file", logFileName))
+		append = false;
+
+	const Setting& prj = conf.getRoot()["Prj"];
+
+
+	prj.lookupValue("lon", prjLon);  // градусы
+	prj.lookupValue("lat", prjLat);  // градусы
+	prj.lookupValue("lon_size", prjLonSize);  // градусы
+	prj.lookupValue("lat_size", prjLatSize);  // градусы
+
+	prj.lookupValue("res", prjRes);  // секунды
+	prj.lookupValue("type", prjType);   // "1" - меркаторская, "2" - равнопромежуточная
+
+	if( prjType != 1 && prjType != 2 ) {
+		throw TRequestExc( 100, "Неправильное значение параметра PRJ_TYPE" );
+	}
+
+	prj.lookupValue("mask", prjMask);   // "0" - ничего не маскировать, "1" - маскировать сушу
+
+	if( prjMask != 0 && prjMask != 1 ) {
+		throw TRequestExc( 100, "Неправильное значение параметра PRJ_MASK" );
+	}
+
 }
 
 void parseCommandString( int argc, char* argv[] ) throw ( TException ) {
