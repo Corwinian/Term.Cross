@@ -15,6 +15,8 @@
 #define LOG_FORMAT "%d %t %e %m"
 #endif
 
+using namespace libconfig;
+
 const char* useMsg = "\
  Использование: filtr [опции] имя_конфигурации файл_данных\n\
  файл_данных     Файл корректированных температур\n\
@@ -390,7 +392,6 @@ void parseCommandString( int argc, char* argv[], TFiltrParams& params ) throw (T
 void readCfg( TFiltrParams& params ) throw (TException) {
 	char path[MAX_PATH];
 	const char * s;
-	TCfg* cfg = NULL;
 
 	if((NULL == strchr(cfgName,'\\'))&&
 			(NULL == strchr(cfgName,'/'))&&
@@ -412,151 +413,78 @@ void readCfg( TFiltrParams& params ) throw (TException) {
 		strcpy(path,cfgName);
 	}
 
-	cfg = new TCfg( path );
+ Config conf;
+	conf.readFile(path);
+	delete path; 
+	//const Setting& root = cfg.getRoot();
 
-	try {
-		s = cfg->getValue( "LOG_LEVEL" );           /* допустимые значения: dump,debug,info,warning,error,fatal */
-		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(string(s))))
+	const Setting& Log = conf.getRoot()["Log"];
+
+	//string name = cfg.lookup("name");
+
+	#warning повторяеться код
+	string sLogLevel;
+	if (Log.lookupValue("level", sLogLevel))
+	{
+		#warning подмать могет передлать функцию
+		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(sLogLevel)))
 			logLevel = nsCLog::info;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_STDERR" );           //
-		if('1' == *s)
-			useStdErr = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_STDOUT" );           //
-		if('1' == *s)
-			useStdOut = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_APPEND" );           //
-		logFileName = s;
-		append = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_FILE" );         /* имя файла */
-		logFileName = s;
+	}
+
+	Log.lookupValue("stderr", useStdErr);
+	Log.lookupValue("stdout", useStdOut);
+
+	append = Log.lookupValue("append", logFileName);
+
+	if (Log.lookupValue("file", logFileName))
 		append = false;
-	} catch(...) {}
 
 	// Здесь должно быть чтение параметров фильтрации
-	try {
-		readFiltrParams( *cfg, params );
-	} catch( TException e ) {
-		delete cfg;
-		throw e;
-	}
-	delete cfg;
+	readFiltrParams( conf.getRoot()["Filtr"], params );
 }
 
-void readFiltrParams( TCfg &cfg, TFiltrParams &p ) throw (TException) {
-	readFlg( cfg, "FILTR_ALBEDO_ENABLE", p.albedo_flag );
-	readFlg( cfg, "FILTR_ASSENT_ALBEDO_ENABLE", p.assent_flag );
-	readDbl( cfg, "FILTR_MAX_ALBEDO_VALUE", p.max_albedo );
-	readDbl( cfg, "FILTR_ALBEDO_PRECISION", p.alb_precision );
-	readFlg( cfg, "FILTR_TEMP_ENABLE", p.temp_flag );
-	readDbl( cfg, "FILTR_MAX_TEMP", p.max_temp );
-	readDbl( cfg, "FILTR_MIN_TEMP", p.min_temp );
-	readFlg( cfg, "FILTR_DAY_DELTA45_ENABLE", p.day_delta45_flag);
-	readDbl( cfg, "FILTR_MIN_DAY_DELTA45", p.day_min_delta45 );
-	readDbl( cfg, "FILTR_MAX_DAY_DELTA45", p.day_max_delta45 );
-	readFlg( cfg, "FILTR_NIGHT_DELTA45_ENABLE", p.night_delta45_flag);
-	readDbl( cfg, "FILTR_MIN_NIGHT_DELTA45", p.night_min_delta45 );
-	readDbl( cfg, "FILTR_MAX_NIGHT_DELTA45", p.night_max_delta45 );
-	readFlg( cfg, "FILTR_DAY_DELTA34_ENABLE", p.day_delta34_flag);
-	readDbl( cfg, "FILTR_MIN_DAY_DELTA34", p.day_min_delta34 );
-	readDbl( cfg, "FILTR_MAX_DAY_DELTA34", p.day_max_delta34 );
-	readFlg( cfg, "FILTR_NIGHT_DELTA34_ENABLE", p.night_delta34_flag);
-	readDbl( cfg, "FILTR_MIN_NIGHT_DELTA34", p.night_min_delta34 );
-	readDbl( cfg, "FILTR_MAX_NIGHT_DELTA34", p.night_max_delta34 );
-	readFlg( cfg, "FILTR_DAY_DELTA35_ENABLE", p.day_delta35_flag);
-	readDbl( cfg, "FILTR_MIN_DAY_DELTA35", p.day_min_delta35 );
-	readDbl( cfg, "FILTR_MAX_DAY_DELTA35", p.day_max_delta35 );
-	readFlg( cfg, "FILTR_NIGHT_DELTA35_ENABLE", p.night_delta35_flag);
-	readDbl( cfg, "FILTR_MIN_NIGHT_DELTA35", p.night_min_delta35 );
-	readDbl( cfg, "FILTR_MAX_NIGHT_DELTA35", p.night_max_delta35 );
-	readFlg( cfg, "FILTR_TEMP_UNIFORMITY_ENABLE", p.temp_uniformity_flag);
-	readDbl( cfg, "FILTR_TEMP_UNIFORMITY_THRESHOLD", p.temp_uniformity_threshold );
-	readFlg( cfg, "FILTR_ALBEDO_UNIFORMITY_ENABLE", p.albedo_uniformity_flag);
-	readDbl( cfg, "FILTR_ALBEDO_UNIFORMITY_THRESHOLD", p.albedo_uniformity_threshold );
-	readFlg( cfg, "FILTR_CLOUD_BORDER_ENABLE", p.cloud_border_flag );
-	readInt( cfg, "FILTR_CLOUD_BORDER_WINDOW_SIZE", p.cloud_border_win_size );
-	readDbl( cfg, "FILTR_MAX_FILTERED_PERCENT", p.max_filtered_percent );
-	readFlg( cfg, "FILTR_STAT_ENABLE", p.stat_flag );
-}
+void readFiltrParams( const Setting& cfg, TFiltrParams &p ) throw (TException) {
+	cfg.lookupValue("albedo_enable",  p.albedo_flag );
+	cfg.lookupValue("assent_albedo_enable",  p.assent_flag );
+	cfg.lookupValue("max_albedo_value",  p.max_albedo);//readDbl( cfg, "FILTR_", p.max_albedo );
+	cfg.lookupValue("albedo_precision",  p.alb_precision ); //readDbl( cfg, "FILTR_", p.alb_precision );
+	cfg.lookupValue("temp_enable",  p.temp_flag); //readFlg( cfg, "FILTR_", p.temp_flag );
+	cfg.lookupValue("max_temp",  p.max_temp); //readDbl( cfg, "FILTR_",  );
+	cfg.lookupValue("min_temp",  p.min_temp ); //readDbl( cfg, "FILTR_MIN_TEMP",);
+	
+	
+	cfg.lookupValue("day_delta45_enable",  p.day_delta45_flag); //readFlg( cfg, "FILTR_DAY_DELTA45_ENABLE", p.day_delta45_flag);
+	cfg.lookupValue("min_day_delta45",  p.day_min_delta45); //readDbl( cfg, "FILTR_MIN_DAY_DELTA45", p.day_min_delta45 );
+	cfg.lookupValue("max_day_delta45",  p.day_max_delta45); //readDbl( cfg, "FILTR_MAX_DAY_DELTA45", p.day_max_delta45 );
 
-void readFlg( TCfg& cfg, const char *name, int& flag ) throw (TException) {
-	  
-	string s = cfg.getValue( name );
+	cfg.lookupValue("night_delta45_enable",  p.night_delta45_flag); //readFlg( cfg, "FILTR_NIGHT_DELTA45_ENABLE", p.night_delta45_flag);
+	cfg.lookupValue("min_night_delta45",  p.night_min_delta45); //readDbl( cfg, "FILTR_MIN_NIGHT_DELTA45", p.night_min_delta45 );
+	cfg.lookupValue("max_night_delta45",  p.night_max_delta45); //readDbl( cfg, "FILTR_MAX_NIGHT_DELTA45", p.night_max_delta45 );
+	
+	cfg.lookupValue("day_delta34_enable",  p.day_delta34_flag);
+	cfg.lookupValue("min_day_delta34",  p.day_min_delta34);
+	cfg.lookupValue("max_day_delta34",  p.day_max_delta34);
 
-	if ( s.size() > 1 || s[0] != '0' && s[0] != '1'){
-		#warning char *
-		char * msg;
-		sprintf( msg, "Параметр %s должен быть 0, 1 или пустым. Его значение %s", name, s.c_str() );
-		throw TException( 1, msg );
-	}
+	cfg.lookupValue("night_delta34_enable",  p.night_delta34_flag);
+	cfg.lookupValue("min_night_delta34",  p.night_min_delta34);
+	cfg.lookupValue("max_night_delta34",  p.night_max_delta34);
 
-	flag = s.empty() || s[0] - '0';
-}
+	cfg.lookupValue("day_delta35_enable",  p.day_delta35_flag);
+	cfg.lookupValue("min_day_delta35",  p.day_min_delta35);
+	cfg.lookupValue("max_day_delta35",  p.day_max_delta35);
 
-void readDbl( TCfg& cfg, const char *name, double &val ) throw (TException) {
-	const char *s;
-	char *rest;
-	//try {
-	  
-	s = cfg.getValue( name );
-	//} catch( TRequestExc &e ) {
-	//	sprintf( msg, "в конфигурационном файле отсутствует параметр %s", name );
-	//	logfile->error(msg);
-	//	sprintf( msg, "сообщение класса:%s", e.text() );
-	//	logfile->error(msg);
-	//	throw;
-	//}
-	//sprintf( msg, "%s = %s", name, s );
-	//logfile->debug(msg);
-	double a = strtod( s, &rest );
-	while( isspace(*rest) )
-		rest++;
-	if( *rest != 0 ) {
-		sprintf( msg, "Параметр %s должен быть плавающим числом. Его значение %s", name, s );
-		throw TException( 1, msg );
-		//logfile->error(msg);
-		//sprintf( msg, "Его значение %s", s );
-		//logfile->error(msg);
-		//return 1;
-	}
-	val = a;
-	return;
-}
+	cfg.lookupValue("night_delta35_enable",  p.night_delta35_flag);
+	cfg.lookupValue("min_night_delta35",  p.night_min_delta35);
+	cfg.lookupValue("max_night_delta35",  p.night_max_delta35);
 
-void readInt( TCfg& cfg, const char *name, int &val ) throw (TException) {
-	const char *s;
-	char *rest;
-	//try {
-	s = cfg.getValue( name );
-	//} catch( TRequestExc &e ) {
-	//	sprintf( msg, "в конфигурационном файле отсутствует параметр %s", name );
-	//	logfile->error(msg);
-	//	sprintf( msg, "сообщение класса: %s", e.text() );
-	//	logfile->error(msg);
-	//	throw;
-	//}
-	//sprintf( msg, "%s = %s", name, s );
-	//logfile->debug(msg);
-	long a = strtol( s, &rest, 10 );
-	while( isspace(*rest) )
-		rest++;
-	if( *rest != 0 ) {
-		sprintf( msg, "Параметр %s должен быть целым числом. Его значение %s", name, s );
-		throw TException( 1, msg );
-		//logfile->error(msg);
-		//sprintf( msg, "его значение %s", s );
-		//logfile->error(msg);
-		//return 1;
-	}
-	val = a;
-	return;
+	cfg.lookupValue("temp_uniformity_enable",  p.temp_uniformity_flag); //readFlg( cfg, "FILTR_TEMP_UNIFORMITY_ENABLE", p.temp_uniformity_flag);
+	cfg.lookupValue("temp_uniformity_threshold",  p.temp_uniformity_threshold); //readDbl( cfg, "FILTR_TEMP_UNIFORMITY_THRESHOLD", p.temp_uniformity_threshold );
+	cfg.lookupValue("albedo_uniformity_enable",  p.albedo_uniformity_flag); //readFlg( cfg, "FILTR_ALBEDO_UNIFORMITY_ENABLE", p.albedo_uniformity_flag);
+	cfg.lookupValue("albedo_uniformity_threshold",  p.albedo_uniformity_threshold); //readDbl( cfg, "FILTR_ALBEDO_UNIFORMITY_THRESHOLD", p.albedo_uniformity_threshold );
+	cfg.lookupValue("cloud_border_enable",  p.cloud_border_flag); //readFlg( cfg, "FILTR_CLOUD_BORDER_ENABLE", p.cloud_border_flag );
+	cfg.lookupValue("cloud_border_window_size",  p.cloud_border_win_size); //readInt( cfg, "FILTR_CLOUD_BORDER_WINDOW_SIZE", p.cloud_border_win_size );
+	cfg.lookupValue("max_filtered_percent",  p.max_filtered_percent); //readDbl( cfg, "FILTR_MAX_FILTERED_PERCENT", p.max_filtered_percent );
+	cfg.lookupValue("stat_enable",  p.stat_flag); //readFlg( cfg, "FILTR_STAT_ENABLE", p.stat_flag );
 }
 
 void construct_file_names() {

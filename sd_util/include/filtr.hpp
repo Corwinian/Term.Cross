@@ -3,10 +3,7 @@
 void parseCommandString(int, char**, TFiltrParams&) throw (TException);
 //int createLog(TLog**);
 void readCfg(TFiltrParams&) throw (TException);
-void readFiltrParams(TCfg&, TFiltrParams&) throw (TException);
-void readFlg(TCfg&, const char*, int&) throw (TException);
-void readDbl(TCfg&, const char*, double&) throw (TException);
-void readInt(TCfg&, const char*, int&) throw (TException);
+void readFiltrParams(const Setting&, TFiltrParams&) throw (TException);
 int checkInputFileNameFormat();
 void construct_file_names();
 int read_and_verify_Blk0s(TFiltrParams&);
