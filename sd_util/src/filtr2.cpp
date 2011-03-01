@@ -2,7 +2,7 @@
  filtr2.cpp
  Отличия от программы filtr заключаются в параметрическом задании
  порогов фильтрации по разности инфракрасных каналов.
- Так, например, 
+ Так, например,
  (T4-T5) in [ a0+a1*T4+a2*t4^2 - sigma, a0+a1*T4+a2*t4^2 + sigma]
 ------------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -11,13 +11,16 @@
 #include <orbmodel.hpp>
 #include <c_lib.hpp>
 #include <Log.hpp>
-
+//#include "strformat/strformat.hpp"
 #include "auto_ptr.hpp"
 #include "astronom.hpp"
 
 #ifndef LOG_FORMAT
 #define LOG_FORMAT "%d %t %e %m"
 #endif
+
+using namespace std;
+using namespace libconfig;
 
 const char* useMsg = "\
  Использование: filtr2 [опции] имя_конфигурации файл_данных\n\
@@ -252,6 +255,7 @@ int TFiltr::scans;
 
 #include "filtr2.hpp"
 
+
 int main(int argc, char *argv[]) {
 
 	if( argc < 3 ) {
@@ -272,8 +276,8 @@ int main(int argc, char *argv[]) {
 
 	TFiltrParams filtrParams;
 
-	TCfg *cfg = 0;
-	TAutoPtr<TCfg> pcfg(cfg);
+	Config cfg ;
+	//TAutoPtr<Config> pcfg(cfg);
 	try {
 		readCfg( cfg, filtrParams );
 		parseCommandString( argc, argv, filtrParams );
@@ -318,7 +322,7 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 
-		readFiltrParams( *cfg, filtrParams, in4_blk0.b0.satId );
+		readFiltrParams( cfg.getRoot()["Filtr"], filtrParams, in4_blk0.b0.satId );
 
 		// для автоматического удаления данных по окончанию работы
 		TAutoPtr<short> a_in_data(in_data);
@@ -432,10 +436,9 @@ void parseCommandString( int argc, char* argv[], TFiltrParams& params ) throw (T
 	}
 }
 
-void readCfg( TCfg* (&cfg), TFiltrParams& params ) throw (TException) {
+void readCfg(Config& cfg, TFiltrParams& params ) throw (TException) {
 	char path[MAX_PATH];
 	const char * s;
-	cfg = NULL;
 
 	if((NULL == strchr(cfgName,'\\'))&&
 			(NULL == strchr(cfgName,'/'))&&
@@ -457,330 +460,72 @@ void readCfg( TCfg* (&cfg), TFiltrParams& params ) throw (TException) {
 		strcpy(path,cfgName);
 	}
 
-	cfg = new TCfg( path );
+ 	cfg.readFile(path);
 
-	try {
-		s = cfg->getValue( "LOG_LEVEL" );           /* допустимые значения: dump,debug,info,warning,error,fatal */
-		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(string(s))))
+	const Setting& Log = cfg.getRoot()["Log"];
+
+	//string name = cfg.lookup("name");
+
+	#warning повторяеться код
+	string sLogLevel;
+	if (Log.lookupValue("level", sLogLevel))
+	{
+		#warning подмать могет передлать функцию
+		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(sLogLevel)))
 			logLevel = nsCLog::info;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_STDERR" );           //
-		if('1' == *s)
-			useStdErr = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_STDOUT" );           //
-		if('1' == *s)
-			useStdOut = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_APPEND" );           //
-		logFileName = s;
-		append = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_FILE" );         /* имя файла */
-		logFileName = s;
+	}
+
+	Log.lookupValue("stderr", useStdErr);
+	Log.lookupValue("stdout", useStdOut);
+
+	append = Log.lookupValue("append", logFileName);
+
+	if (Log.lookupValue("file", logFileName))
 		append = false;
-	} catch(...) {}
 
-	try {
-		readFiltrParams( *cfg, params );
-	} catch( TException e ) {
-		throw e;
-	}
+	readFiltrParams( cfg.getRoot()["Filtr"], params );
 }
 
-void readFiltrParams( TCfg &cfg, TFiltrParams &p, int satId ) throw (TException) {
-	if( !satId ){
-		readFlg( cfg, "FILTR_ALBEDO_ENABLE", p.albedo_flag );
-		readFlg( cfg, "FILTR_ASSENT_ALBEDO_ENABLE", p.assent_flag );
-		readDbl( cfg, "FILTR_MAX_ALBEDO_VALUE", p.max_albedo );
-		readDbl( cfg, "FILTR_ALBEDO_PRECISION", p.alb_precision );
-		readFlg( cfg, "FILTR_TEMP_ENABLE", p.temp_flag );
-		readDbl( cfg, "FILTR_MAX_TEMP", p.max_temp );
-		readDbl( cfg, "FILTR_MIN_TEMP", p.min_temp );
-		readFlg( cfg, "FILTR_DAY_DELTA45_ENABLE", p.day_delta45_flag);
-		readDbl( cfg, "FILTR_MIN_DAY_DELTA45", p.day_min_delta45 );
-		readDbl( cfg, "FILTR_MAX_DAY_DELTA45", p.day_max_delta45 );
-		readFlg( cfg, "FILTR_NIGHT_DELTA45_ENABLE", p.night_delta45_flag);
-		readDbl( cfg, "FILTR_MIN_NIGHT_DELTA45", p.night_min_delta45 );
-		readDbl( cfg, "FILTR_MAX_NIGHT_DELTA45", p.night_max_delta45 );
-		readFlg( cfg, "FILTR_DAY_DELTA34_ENABLE", p.day_delta34_flag);
-		readDbl( cfg, "FILTR_MIN_DAY_DELTA34", p.day_min_delta34 );
-		readDbl( cfg, "FILTR_MAX_DAY_DELTA34", p.day_max_delta34 );
-		readFlg( cfg, "FILTR_NIGHT_DELTA34_ENABLE", p.night_delta34_flag);
-		readDbl( cfg, "FILTR_MIN_NIGHT_DELTA34", p.night_min_delta34 );
-		readDbl( cfg, "FILTR_MAX_NIGHT_DELTA34", p.night_max_delta34 );
-		readFlg( cfg, "FILTR_DAY_DELTA35_ENABLE", p.day_delta35_flag);
-		readDbl( cfg, "FILTR_MIN_DAY_DELTA35", p.day_min_delta35 );
-		readDbl( cfg, "FILTR_MAX_DAY_DELTA35", p.day_max_delta35 );
-		readFlg( cfg, "FILTR_NIGHT_DELTA35_ENABLE", p.night_delta35_flag);
-		readDbl( cfg, "FILTR_MIN_NIGHT_DELTA35", p.night_min_delta35 );
-		readDbl( cfg, "FILTR_MAX_NIGHT_DELTA35", p.night_max_delta35 );
-		readFlg( cfg, "FILTR_TEMP_UNIFORMITY_ENABLE", p.temp_uniformity_flag);
-		readDbl( cfg, "FILTR_TEMP_UNIFORMITY_THRESHOLD", p.temp_uniformity_threshold );
-		readFlg( cfg, "FILTR_ALBEDO_UNIFORMITY_ENABLE", p.albedo_uniformity_flag);
-		readDbl( cfg, "FILTR_ALBEDO_UNIFORMITY_THRESHOLD", p.albedo_uniformity_threshold );
-		readFlg( cfg, "FILTR_CLOUD_BORDER_ENABLE", p.cloud_border_flag );
-		readInt( cfg, "FILTR_CLOUD_BORDER_WINDOW_SIZE", p.cloud_border_win_size );
-		readDbl( cfg, "FILTR_MAX_FILTERED_PERCENT", p.max_filtered_percent );
-		readFlg( cfg, "FILTR_STAT_ENABLE", p.stat_flag );
-	}
 
-	if( satId ){
-		p.day_45_quadratic_filtr_flag = 0;
-		try {
-			char str[200];
-			sprintf( str, "FILTR_SIGMA_DAY_45_%d", satId );
-			readDbl( cfg, str, p.day_45_quadratic_filtr_sigma );
-			sprintf( str, "FILTR_A0_DAY_45_%d", satId );
-			readDbl( cfg, str, p.day_45_quadratic_filtr_a0 );
-			sprintf( str, "FILTR_A1_DAY_45_%d", satId );
-			readDbl( cfg, str, p.day_45_quadratic_filtr_a1 );
-			sprintf( str, "FILTR_A2_DAY_45_%d", satId );
-			readDbl( cfg, str, p.day_45_quadratic_filtr_a2 );
-			p.day_45_quadratic_filtr_flag = 1;
-			sprintf( msg, 
-			      "Включена дополнительня фильтация по разности 4-5 каналов для дневных точек" );
-			logfile->info( msg );
-			sprintf( msg, "Параметры: [ a0=%g, a1=%g, a2=%g, sigma=%g ]",
-			              p.day_45_quadratic_filtr_a0, p.day_45_quadratic_filtr_a1, 
-			              p.day_45_quadratic_filtr_a2, p.day_45_quadratic_filtr_sigma );
-			logfile->info( msg );
+void readFiltrParamsWithSatId(const Setting& cfg, int satId,
+							  int &flag, double &sigma, double &a0, double &a1, double &a2,
+							  bool isDay, int channels )throw (TException)
+{
+	const char * day = isDay ? "DAY" : "NIGHT"; //лучшего названия не придумал
 
-		}
-		catch ( TException & e ){
-			p.day_45_quadratic_filtr_flag = 0;
-		};
-	}
+	flag = 1 & cfg.lookupValue(strformat("FILTR_SIGMA_%s_%d_%d", day, channels,satId), sigma);
+	flag &= cfg.lookupValue(strformat("FILTR_A0_%s_45_%d", day, channels,satId), a0);
+	flag &= cfg.lookupValue(strformat("FILTR_A1_%s_45_%d", day, channels,satId), a1);
+	flag &= cfg.lookupValue(strformat("FILTR_A2_%s_45_%d", day, channels,satId), a2);
 
-	if( satId ){
-		p.night_45_quadratic_filtr_flag = 0;
-		try {
-			char str[200];
-			sprintf( str, "FILTR_SIGMA_NIGHT_45_%d", satId );
-			readDbl( cfg, str, p.night_45_quadratic_filtr_sigma );
-			sprintf( str, "FILTR_A0_NIGHT_45_%d", satId );
-			readDbl( cfg, str, p.night_45_quadratic_filtr_a0 );
-			sprintf( str, "FILTR_A1_NIGHT_45_%d", satId );
-			readDbl( cfg, str, p.night_45_quadratic_filtr_a1 );
-			sprintf( str, "FILTR_A2_NIGHT_45_%d", satId );
-			readDbl( cfg, str, p.night_45_quadratic_filtr_a2 );
-			p.night_45_quadratic_filtr_flag = 1;
-			sprintf( msg, 
-			      "Включена дополнительня фильтация по разности 4-5 каналов для ночных точек" );
-			logfile->info( msg );
-			sprintf( msg, "Параметры: [ a0=%g, a1=%g, a2=%g, sigma=%g ]",
-			              p.night_45_quadratic_filtr_a0, p.night_45_quadratic_filtr_a1, 
-			              p.night_45_quadratic_filtr_a2, p.night_45_quadratic_filtr_sigma );
-			logfile->info( msg );
-
-		}
-		catch ( TException & e ){
-			p.night_45_quadratic_filtr_flag = 0;
-		};
-	}
-
-	if( satId ){
-		p.day_35_quadratic_filtr_flag = 0;
-		try {
-			char str[200];
-			sprintf( str, "FILTR_SIGMA_DAY_35_%d", satId );
-			readDbl( cfg, str, p.day_35_quadratic_filtr_sigma );
-			sprintf( str, "FILTR_A0_DAY_35_%d", satId );
-			readDbl( cfg, str, p.day_35_quadratic_filtr_a0 );
-			sprintf( str, "FILTR_A1_DAY_35_%d", satId );
-			readDbl( cfg, str, p.day_35_quadratic_filtr_a1 );
-			sprintf( str, "FILTR_A2_DAY_35_%d", satId );
-			readDbl( cfg, str, p.day_35_quadratic_filtr_a2 );
-			p.day_35_quadratic_filtr_flag = 1;
-			sprintf( msg, 
-			      "Включена дополнительня фильтация по разности 3-5 каналов для дневных точек" );
-			logfile->info( msg );
-			sprintf( msg, "Параметры: [ a0=%g, a1=%g, a2=%g, sigma=%g ]",
-			              p.day_35_quadratic_filtr_a0, p.day_35_quadratic_filtr_a1, 
-			              p.day_35_quadratic_filtr_a2, p.day_35_quadratic_filtr_sigma );
-			logfile->info( msg );
-
-		}
-		catch ( TException & e ){
-			p.day_35_quadratic_filtr_flag = 0;
-		};
-	}
-
-	if( satId ){
-		p.night_35_quadratic_filtr_flag = 0;
-		try {
-			char str[200];
-			sprintf( str, "FILTR_SIGMA_NIGHT_35_%d", satId );
-			readDbl( cfg, str, p.night_35_quadratic_filtr_sigma );
-			sprintf( str, "FILTR_A0_NIGHT_35_%d", satId );
-			readDbl( cfg, str, p.night_35_quadratic_filtr_a0 );
-			sprintf( str, "FILTR_A1_NIGHT_35_%d", satId );
-			readDbl( cfg, str, p.night_35_quadratic_filtr_a1 );
-			sprintf( str, "FILTR_A2_NIGHT_35_%d", satId );
-			readDbl( cfg, str, p.night_35_quadratic_filtr_a2 );
-			p.night_35_quadratic_filtr_flag = 1;
-			sprintf( msg, 
-			      "Включена дополнительня фильтация по разности 3-5 каналов для ночных точек" );
-			logfile->info( msg );
-			sprintf( msg, "Параметры: [ a0=%g, a1=%g, a2=%g, sigma=%g ]",
-			              p.night_35_quadratic_filtr_a0, p.night_35_quadratic_filtr_a1, 
-			              p.night_35_quadratic_filtr_a2, p.night_35_quadratic_filtr_sigma );
-			logfile->info( msg );
-
-		}
-		catch ( TException & e ){
-			p.night_35_quadratic_filtr_flag = 0;
-		};
-	}
-
-	if( satId ){
-		p.day_34_quadratic_filtr_flag = 0;
-		try {
-			char str[200];
-			sprintf( str, "FILTR_SIGMA_DAY_34_%d", satId );
-			readDbl( cfg, str, p.day_34_quadratic_filtr_sigma );
-			sprintf( str, "FILTR_A0_DAY_34_%d", satId );
-			readDbl( cfg, str, p.day_34_quadratic_filtr_a0 );
-			sprintf( str, "FILTR_A1_DAY_34_%d", satId );
-			readDbl( cfg, str, p.day_34_quadratic_filtr_a1 );
-			sprintf( str, "FILTR_A2_DAY_34_%d", satId );
-			readDbl( cfg, str, p.day_34_quadratic_filtr_a2 );
-			p.day_34_quadratic_filtr_flag = 1;
-			sprintf( msg, 
-			      "Включена дополнительня фильтация по разности 3-4 каналов для дневных точек" );
-			logfile->info( msg );
-			sprintf( msg, "Параметры: [ a0=%g, a1=%g, a2=%g, sigma=%g ]",
-			              p.day_34_quadratic_filtr_a0, p.day_34_quadratic_filtr_a1, 
-			              p.day_34_quadratic_filtr_a2, p.day_34_quadratic_filtr_sigma );
-			logfile->info( msg );
-
-		}
-		catch ( TException & e ){
-			p.day_34_quadratic_filtr_flag = 0;
-		};
-	}
-
-	if( satId ){
-		p.night_34_quadratic_filtr_flag = 0;
-		try {
-			char str[200];
-			sprintf( str, "FILTR_SIGMA_NIGHT_34_%d", satId );
-			readDbl( cfg, str, p.night_34_quadratic_filtr_sigma );
-			sprintf( str, "FILTR_A0_NIGHT_34_%d", satId );
-			readDbl( cfg, str, p.night_34_quadratic_filtr_a0 );
-			sprintf( str, "FILTR_A1_NIGHT_34_%d", satId );
-			readDbl( cfg, str, p.night_34_quadratic_filtr_a1 );
-			sprintf( str, "FILTR_A2_NIGHT_34_%d", satId );
-			readDbl( cfg, str, p.night_34_quadratic_filtr_a2 );
-			p.night_34_quadratic_filtr_flag = 1;
-			sprintf( msg, 
-			      "Включена дополнительня фильтация по разности 3-4 каналов для ночных точек" );
-			logfile->info( msg );
-			sprintf( msg, "Параметры: [ a0=%g, a1=%g, a2=%g, sigma=%g ]",
-			              p.night_34_quadratic_filtr_a0, p.night_34_quadratic_filtr_a1, 
-			              p.night_34_quadratic_filtr_a2, p.night_34_quadratic_filtr_sigma );
-			logfile->info( msg );
-
-		}
-		catch ( TException & e ){
-			p.night_34_quadratic_filtr_flag = 0;
-		};
-	}
+	//тк каналы пакованы в 2 - значное число, то можно спокойно поделить на 10, и получить 2 нужных канала
+	logfile->info(strformat("Включена дополнительня фильтация по разности %d-%d каналов для дневных точек",
+							channels / 10, channels % 10));
+	logfile->info(strformat("Параметры: [ a0=%g, a1=%g, a2=%g, sigma=%g ]", a0, a1, a2, sigma ) );
 }
 
-void readFlg( TCfg& cfg, const char *name, int& flag ) throw (TException) {
-	const char *s;
-	//try {
-	  
-	s = cfg.getValue( name );
-	//} catch( TRequestExc &e ) {
-	//	sprintf( msg, "в конфигурационном файле отсутствует параметр %s", name );
-	//	logfile->error(msg);
-	//	sprintf( msg, "сообщение класса:%s", e.text() );
-	//	logfile->error(msg);
-	//	throw;
-	//}
-	//sprintf( msg, "%s = %s", name, s );
-	//logfile->debug(msg);
+void readFiltrParams( const Setting& Filtr, TFiltrParams &p, int satId ) throw (TException) {
 
-	if( s[0] == 0 || ( s[0] == '0' && s[1] == 0 ) ) {
-		flag = 0;
-		return;
-	}
-	if( s[0] == '1' && s[1] == 0 ) {
-		flag = 1;
-		return;
-	}
+	if( !satId )
+		return readFiltrParams(Filtr, p);
 
-	sprintf( msg, "Параметр %s должен быть 0, 1 или пустым. Его значение %s", name, s );
-	throw TException( 1, msg );
-	//logfile->error(msg);
-	//sprintf( msg, "Его значение %s", s );
-	//logfile->error(msg);
-	//return 1;
-}
+	readFiltrParamsWithSatId(Filtr, satId,p.day_45_quadratic_filtr_flag,p.day_45_quadratic_filtr_sigma,
+		p.day_45_quadratic_filtr_a0,p.day_45_quadratic_filtr_a1,p.day_45_quadratic_filtr_a2, true, 45 );
 
-void readDbl( TCfg& cfg, const char *name, double &val ) throw (TException) {
-	const char *s;
-	char *rest;
-	//try {
-	  
-	s = cfg.getValue( name );
-	//} catch( TRequestExc &e ) {
-	//	sprintf( msg, "в конфигурационном файле отсутствует параметр %s", name );
-	//	logfile->error(msg);
-	//	sprintf( msg, "сообщение класса:%s", e.text() );
-	//	logfile->error(msg);
-	//	throw;
-	//}
-	//sprintf( msg, "%s = %s", name, s );
-	//logfile->debug(msg);
-	double a = strtod( s, &rest );
-	while( isspace(*rest) )
-		rest++;
-	if( *rest != 0 ) {
-		sprintf( msg, "Параметр %s должен быть плавающим числом. Его значение %s", name, s );
-		throw TException( 1, msg );
-		//logfile->error(msg);
-		//sprintf( msg, "Его значение %s", s );
-		//logfile->error(msg);
-		//return 1;
-	}
-	val = a;
-	return;
-}
+	readFiltrParamsWithSatId(Filtr, satId,p.night_45_quadratic_filtr_flag,p.night_45_quadratic_filtr_sigma,
+		p.night_45_quadratic_filtr_a0,p.night_45_quadratic_filtr_a1,p.night_45_quadratic_filtr_a2, false, 45 );
 
-void readInt( TCfg& cfg, const char *name, int &val ) throw (TException) {
-	const char *s;
-	char *rest;
-	//try {
-	s = cfg.getValue( name );
-	//} catch( TRequestExc &e ) {
-	//	sprintf( msg, "в конфигурационном файле отсутствует параметр %s", name );
-	//	logfile->error(msg);
-	//	sprintf( msg, "сообщение класса: %s", e.text() );
-	//	logfile->error(msg);
-	//	throw;
-	//}
-	//sprintf( msg, "%s = %s", name, s );
-	//logfile->debug(msg);
-	long a = strtol( s, &rest, 10 );
-	while( isspace(*rest) )
-		rest++;
-	if( *rest != 0 ) {
-		sprintf( msg, "Параметр %s должен быть целым числом. Его значение %s", name, s );
-		throw TException( 1, msg );
-		//logfile->error(msg);
-		//sprintf( msg, "его значение %s", s );
-		//logfile->error(msg);
-		//return 1;
-	}
-	val = a;
-	return;
+	readFiltrParamsWithSatId(Filtr, satId,p.day_35_quadratic_filtr_flag,p.day_35_quadratic_filtr_sigma,
+		p.day_35_quadratic_filtr_a0,p.day_35_quadratic_filtr_a1,p.day_35_quadratic_filtr_a2, true, 35 );
+
+	readFiltrParamsWithSatId(Filtr, satId,p.night_35_quadratic_filtr_flag,p.night_35_quadratic_filtr_sigma,
+		p.night_35_quadratic_filtr_a0,p.night_35_quadratic_filtr_a1,p.night_35_quadratic_filtr_a2, false, 35 );
+
+	readFiltrParamsWithSatId(Filtr, satId,p.day_34_quadratic_filtr_flag,p.day_34_quadratic_filtr_sigma,
+		p.day_34_quadratic_filtr_a0,p.day_34_quadratic_filtr_a1,p.day_34_quadratic_filtr_a2, true, 34 );
+
+	readFiltrParamsWithSatId(Filtr, satId, p.night_34_quadratic_filtr_flag, p.night_34_quadratic_filtr_sigma,
+		p.night_34_quadratic_filtr_a0, p.night_34_quadratic_filtr_a1, p.night_34_quadratic_filtr_a2, false, 34 );
 }
 
 void construct_file_names() {
@@ -1277,7 +1022,7 @@ int TFiltr::delta34Test( int scan, int j, double ang ) {
 				double a0 = p.day_34_quadratic_filtr_a0;
 				double a1 = p.day_34_quadratic_filtr_a1;
 				double a2 = p.day_34_quadratic_filtr_a2;
-				double a = a0 + t4*a1 + t4*t4*a2; 
+				double a = a0 + t4*a1 + t4*t4*a2;
 				double minD = a - 1.5*p.day_34_quadratic_filtr_sigma;
 				double maxD = a + 1.5*p.day_34_quadratic_filtr_sigma;
 				return deltaTest( scan, j, ang,
@@ -1297,7 +1042,7 @@ int TFiltr::delta34Test( int scan, int j, double ang ) {
 				double a0 = p.night_34_quadratic_filtr_a0;
 				double a1 = p.night_34_quadratic_filtr_a1;
 				double a2 = p.night_34_quadratic_filtr_a2;
-				double a = a0 + t4*a1 + t4*t4*a2; 
+				double a = a0 + t4*a1 + t4*t4*a2;
 				double minD = a - 1.5*p.night_34_quadratic_filtr_sigma;
 				double maxD = a + 1.5*p.night_34_quadratic_filtr_sigma;
 				return deltaTest( scan, j, ang,
@@ -1323,7 +1068,7 @@ int TFiltr::delta35Test( int scan, int j, double ang ) {
 				double a0 = p.day_35_quadratic_filtr_a0;
 				double a1 = p.day_35_quadratic_filtr_a1;
 				double a2 = p.day_35_quadratic_filtr_a2;
-				double a = a0 + t4*a1 + t4*t4*a2; 
+				double a = a0 + t4*a1 + t4*t4*a2;
 				double minD = a - 1.5*p.day_35_quadratic_filtr_sigma;
 				double maxD = a + 1.5*p.day_35_quadratic_filtr_sigma;
 				return deltaTest( scan, j, ang,
@@ -1343,7 +1088,7 @@ int TFiltr::delta35Test( int scan, int j, double ang ) {
 				double a0 = p.night_35_quadratic_filtr_a0;
 				double a1 = p.night_35_quadratic_filtr_a1;
 				double a2 = p.night_35_quadratic_filtr_a2;
-				double a = a0 + t4*a1 + t4*t4*a2; 
+				double a = a0 + t4*a1 + t4*t4*a2;
 				double minD = a - 1.5*p.night_35_quadratic_filtr_sigma;
 				double maxD = a + 1.5*p.night_35_quadratic_filtr_sigma;
 				return deltaTest( scan, j, ang,
@@ -1369,7 +1114,7 @@ int TFiltr::delta45Test( int scan, int j, double ang ) {
 				double a0 = p.day_45_quadratic_filtr_a0;
 				double a1 = p.day_45_quadratic_filtr_a1;
 				double a2 = p.day_45_quadratic_filtr_a2;
-				double a = a0 + t4*a1 + t4*t4*a2; 
+				double a = a0 + t4*a1 + t4*t4*a2;
 				double minD = a - 1.5*p.day_45_quadratic_filtr_sigma;
 				double maxD = a + 1.5*p.day_45_quadratic_filtr_sigma;
 				return deltaTest( scan, j, ang,
@@ -1389,7 +1134,7 @@ int TFiltr::delta45Test( int scan, int j, double ang ) {
 				double a0 = p.night_45_quadratic_filtr_a0;
 				double a1 = p.night_45_quadratic_filtr_a1;
 				double a2 = p.night_45_quadratic_filtr_a2;
-				double a = a0 + t4*a1 + t4*t4*a2; 
+				double a = a0 + t4*a1 + t4*t4*a2;
 				double minD = a - 1.5*p.night_45_quadratic_filtr_sigma;
 				double maxD = a + 1.5*p.night_45_quadratic_filtr_sigma;
 				return deltaTest( scan, j, ang,

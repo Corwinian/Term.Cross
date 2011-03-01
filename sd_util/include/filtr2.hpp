@@ -2,11 +2,8 @@
 #define _FILTR_HPP_
 void parseCommandString(int, char**, TFiltrParams&) throw (TException);
 //int createLog(TLog**);
-void readCfg(TCfg * (&cfg), TFiltrParams&) throw (TException);
-void readFiltrParams(TCfg&, TFiltrParams&, int satId = 0 ) throw (TException);
-void readFlg(TCfg&, const char*, int&) throw (TException);
-void readDbl(TCfg&, const char*, double&) throw (TException);
-void readInt(TCfg&, const char*, int&) throw (TException);
+void readCfg(Config&, TFiltrParams&) throw (TException);
+void readFiltrParams(const Setting&, TFiltrParams&, int satId = 0 ) throw (TException);
 int checkInputFileNameFormat();
 void construct_file_names();
 int read_and_verify_Blk0s(TFiltrParams&);
