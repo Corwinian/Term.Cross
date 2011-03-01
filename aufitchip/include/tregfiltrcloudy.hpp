@@ -12,29 +12,48 @@
 //
 // Параметры регионов для фильтрации облачности
 //
+typedef long long TCoordinates;
 struct TRegionFiltrCloudy
 {
     void loadRegionsforFiltrCloudyCfg( char ParametrsRegionsforFiltrCloudyDir[MAX_PATH] ) throw( TAccessExc );
 
-    static long NamberRegionsforFiltrCloudy;
+    static TCoordinates NamberRegionsforFiltrCloudy;
 
     // Координаты (в пикселах маски) регионов фильтрации.
-    static long X1Primorye,Y1Primorye, X2Primorye,Y2Primorye, X3Primorye,Y3Primorye, X4Primorye,Y4Primorye,
-                X5Primorye,Y5Primorye, X6Primorye,Y6Primorye, X7Primorye,Y7Primorye, X8Primorye,Y8Primorye;
 
-    static long X1JapanKorea,Y1JapanKorea, X2JapanKorea,Y2JapanKorea, X3JapanKorea,Y3JapanKorea, X4JapanKorea,Y4JapanKorea,
-                X5JapanKorea,Y5JapanKorea, X6JapanKorea,Y6JapanKorea;
+	//static const size_t PRIMORYE_COUNT;
+	#define PRIMORYE_COUNT 8 //по хорошему заменить на конст
+	#define JAPAN_KOREA_COUNT 5  //по хорошему заменить на конст
+	#define MATERIK_LIKES_COUNT 6  //по хорошему заменить на конст
+	#define SAHALIN_KURILS_COUNT 4  //по хорошему заменить на конст
+	#define KAMCHATKA_OHOTSKOE_COUNT 10  //по хорошему заменить на конст
 
-    static long X1MaterikLikes,Y1MaterikLikes, X2MaterikLikes,Y2MaterikLikes, X3MaterikLikes,Y3MaterikLikes, X4MaterikLikes,Y4MaterikLikes,
-                X5MaterikLikes,Y5MaterikLikes, X6MaterikLikes,Y6MaterikLikes;
+	static TCoordinates XPrimorye[PRIMORYE_COUNT], YPrimorye[PRIMORYE_COUNT],
+						XJapanKorea[JAPAN_KOREA_COUNT],YJapanKorea[JAPAN_KOREA_COUNT],
+						XMaterikLikes[MATERIK_LIKES_COUNT], YMaterikLikes[MATERIK_LIKES_COUNT],
+						XSahalinKurils[SAHALIN_KURILS_COUNT],YSahalinKurils[SAHALIN_KURILS_COUNT],
+						XKamchatkaOhotskoe[KAMCHATKA_OHOTSKOE_COUNT],YKamchatkaOhotskoe[KAMCHATKA_OHOTSKOE_COUNT];
 
-    static long X1SahalinKurils,Y1SahalinKurils, X2SahalinKurils,Y2SahalinKurils, X3SahalinKurils,Y3SahalinKurils, X4SahalinKurils,Y4SahalinKurils;
 
-    static long X1KamchatkaOhotskoe,Y1KamchatkaOhotskoe, X2KamchatkaOhotskoe,Y2KamchatkaOhotskoe,
-                X3KamchatkaOhotskoe,Y3KamchatkaOhotskoe, X4KamchatkaOhotskoe,Y4KamchatkaOhotskoe,
-                X5KamchatkaOhotskoe,Y5KamchatkaOhotskoe, X6KamchatkaOhotskoe,Y6KamchatkaOhotskoe,
-                X7KamchatkaOhotskoe,Y7KamchatkaOhotskoe, X8KamchatkaOhotskoe,Y8KamchatkaOhotskoe,
-                X9KamchatkaOhotskoe,Y9KamchatkaOhotskoe, X10KamchatkaOhotskoe,Y10KamchatkaOhotskoe;
+
+   // static TCoordinates  X1Primorye,Y1Primorye, X2Primorye,Y2Primorye, X3Primorye,Y3Primorye, X4Primorye,Y4Primorye,
+     //           X5Primorye,Y5Primorye, X6Primorye,Y6Primorye, X7Primorye,Y7Primorye, X8Primorye,Y8Primorye;
+//
+
+
+    //static TCoordinates X1JapanKorea,Y1JapanKorea, X2JapanKorea,Y2JapanKorea, X3JapanKorea,Y3JapanKorea, X4JapanKorea,Y4JapanKorea,
+     //           X5JapanKorea,Y5JapanKorea, X6JapanKorea,Y6JapanKorea;
+
+   // static TCoordinates X1MaterikLikes,Y1MaterikLikes, X2MaterikLikes,Y2MaterikLikes, X3MaterikLikes,Y3MaterikLikes, X4MaterikLikes,Y4MaterikLikes,
+             //   X5MaterikLikes,Y5MaterikLikes, X6MaterikLikes,Y6MaterikLikes;
+
+    //static TCoordinates X1SahalinKurils,Y1SahalinKurils, X2SahalinKurils,Y2SahalinKurils, X3SahalinKurils,Y3SahalinKurils, X4SahalinKurils,Y4SahalinKurils;
+
+    //static TCoordinates X1KamchatkaOhotskoe,Y1KamchatkaOhotskoe, X2KamchatkaOhotskoe,Y2KamchatkaOhotskoe,
+     //           X3KamchatkaOhotskoe,Y3KamchatkaOhotskoe, X4KamchatkaOhotskoe,Y4KamchatkaOhotskoe,
+       //         X5KamchatkaOhotskoe,Y5KamchatkaOhotskoe, X6KamchatkaOhotskoe,Y6KamchatkaOhotskoe,
+         //       X7KamchatkaOhotskoe,Y7KamchatkaOhotskoe, X8KamchatkaOhotskoe,Y8KamchatkaOhotskoe,
+           //     X9KamchatkaOhotskoe,Y9KamchatkaOhotskoe, X10KamchatkaOhotskoe,Y10KamchatkaOhotskoe;
 };
 
 
@@ -86,7 +105,7 @@ long TRegionFiltrCloudy::X1KamchatkaOhotskoe = 0L, TRegionFiltrCloudy::Y1Kamchat
 void TRegionFiltrCloudy :: loadRegionsforFiltrCloudyCfg( char ParametrsRegionsforFiltrCloudyDir[MAX_PATH] ) throw( TAccessExc ){
 	TAccessExc ae1( 1, "ERROR: Ошибка доступа к cfg-файлу регионов для фильтрации облачности!!!" );
 
-	char drive[MAX_DRIVE], dir[MAX_DIR], path[MAX_PATH]; //fname[MAX_FNAME], 
+	char drive[MAX_DRIVE], dir[MAX_DIR], path[MAX_PATH]; //fname[MAX_FNAME],
 	// Конструирование полного имени cfg-файла параметров регионов для фильтрации облачности.
 	// Проверка существования каталога ParametrsRegionsforFiltrCloudyDir.
 	if( check_dir( ParametrsRegionsforFiltrCloudyDir ) == 0 ) splitpath( ParametrsRegionsforFiltrCloudyDir, drive, dir, 0, 0 );
