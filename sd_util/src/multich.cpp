@@ -17,6 +17,8 @@
 #define LOG_FORMAT "%d %t %e %m"
 #endif
 
+
+using namespace libconfig;
 char useMsg[] = "\n\
 Использование: multich [опции] имя_конфигурации файл_данных\n\
 файл_данных     Распакованный и откалиброванный файл четвертого канала.\n\
@@ -76,7 +78,7 @@ struct TMultichParams {
 	//    MCSST, NLSST и Andy NCSST Triple.
 	// MCSST = A1*T4 + A2*(T4-T5) + A3*(T4-T5)*(sec(sate_Angle)-1)+A4
 	// NLSST = A1*T4 + A2*(T4-T5)*Tsfc + A3*(T4-T5)*(sec(sate_Angle)-1)+A4
-	// Andy NLSST Triple = 
+	// Andy NLSST Triple =
 	//       = A1*T4+A2*T3+A3*T5+A4*(T3-T5)*(sec(sate_Angle)-1)+A5*(sec(sate_Angle)-1)+A6
 	// Коэффициенты могут браться на странице
 	//   http://noaasis.noaa.gov/NOAASIS/pubs/SST/
@@ -84,7 +86,7 @@ struct TMultichParams {
 	char night_type;  //      == 'N' | 'n' используется коррекция NLSST
 	                  //      == 'T' | 't' используется коррекция Andy MCSST Triple
 	// В случае, если должна использоваться формула Andy MCSST Triple
-	// а третий канал осутствует, производится попытка использования 
+	// а третий канал осутствует, производится попытка использования
 	// формулы MCSST с использованием коэффициентов другой части дня
 	// о чем делается сообщение
 };
@@ -155,10 +157,10 @@ int main( int argc, char * argv[] ) {
 	TBlk0_AVHRR out_blk0;
 
 	if( readBlk0( inputFileName[0], in3_blk0 ) != 0 ||
-		verifyBlk0( in3_blk0, inputFileName[0] ) != 0 || 
-	        (in3_blk0.ka == 0.0 && 
+		verifyBlk0( in3_blk0, inputFileName[0] ) != 0 ||
+	        (in3_blk0.ka == 0.0 &&
                      (in3_blk0.maxPixelValue == 1000 || in3_blk0.maxPixelValue == 2000 )
-	        ) )  
+	        ) )
 	{
 		logfile->warning( "Канал 3 видимый" );
 		ch3_exist_flag = 0;
@@ -237,7 +239,7 @@ int main( int argc, char * argv[] ) {
 void readCfg() throw (TException) {
 	char path[MAX_PATH];
 	const char * s;
-	TCfg* cfg = NULL;
+
 
 	if((NULL == strchr(cfgName,'\\'))&&
 			(NULL == strchr(cfgName,'/'))&&
@@ -259,35 +261,31 @@ void readCfg() throw (TException) {
 		strcpy(path,cfgName);
 	}
 
-	cfg = new TCfg( path );
+Config conf;
+	conf.readFile(path);
+	//const Setting& root = cfg.getRoot();
 
-	try {
-		s = cfg->getValue( "LOG_LEVEL" );           /* допустимые значения: dump,debug,info,warning,error,fatal */
-		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(string(s))))
+	const Setting& Log = conf.getRoot()["Log"];
+
+	//string name = cfg.lookup("name");
+
+	#warning повторяеться код
+	string sLogLevel;
+	if (Log.lookupValue("level", sLogLevel))
+	{
+		#warning подмать могет передлать функцию
+		if( nsCLog::unknown == (logLevel = nsCLog::getThresholdFromString(sLogLevel)))
 			logLevel = nsCLog::info;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_STDERR" );           //
-		if('1' == *s)
-			useStdErr = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_STDOUT" );           //
-		if('1' == *s)
-			useStdOut = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_APPEND" );           //
-		logFileName = s;
-		append = true;
-	} catch(...) {}
-	try {
-		s = cfg->getValue( "LOG_FILE" );         /* имя файла */
-		logFileName = s;
-		append = false;
-	} catch(...) {}
+	}
 
-	delete cfg;
+	Log.lookupValue("stderr", useStdErr);
+	Log.lookupValue("stdout", useStdOut);
+
+	append = Log.lookupValue("append", logFileName);
+
+	if (Log.lookupValue("file", logFileName))
+		append = false;
+
 }
 
 void construct_file_names() {
@@ -460,11 +458,11 @@ static int strParse( const char * buf, int& satId, TMultichParams & params ) {
 			 &params.max_delta_day,
 			 &params.min_delta_night,
 			 &params.max_delta_night,
-			 &params.day_type,   
-				&params.a_day[0], &params.a_day[1], &params.a_day[2], 
+			 &params.day_type,
+				&params.a_day[0], &params.a_day[1], &params.a_day[2],
 			        &params.a_day[3], &params.a_day[4], &params.a_day[5],
-			 &params.night_type, 
-			        &params.a_night[0], &params.a_night[1], &params.a_night[2], 
+			 &params.night_type,
+			        &params.a_night[0], &params.a_night[1], &params.a_night[2],
                                 &params.a_night[3], &params.a_night[4], &params.a_night[5] );
 
 	if( params.day_type == 'm' ) params.day_type = 'M';
@@ -495,7 +493,7 @@ static int strParse( const char * buf, int& satId, TMultichParams & params ) {
 		logfile->debug( " Andy Triple NLSST = "
 			"B_1*T4+B_2*T3+B_3*T5+B_4*(T3-T5)*(sec(sate_Angle)-1)+B_5*(sec(sate_Angle)-1)+B_6" );
 		sprintf( msg, "day   B_1 = %lf   B_2 = %lf   B_3 = %lf   B_4 = %lf  B_5 = %lf B_6 = %lf",
-				 params.a_day[0], params.a_day[1], params.a_day[2], 
+				 params.a_day[0], params.a_day[1], params.a_day[2],
 				 params.a_day[3], params.a_day[4], params.a_day[5] );
 		logfile->debug( msg );
 
@@ -509,7 +507,7 @@ static int strParse( const char * buf, int& satId, TMultichParams & params ) {
 			logfile->debug( "Andy Triple MCSST must be used for day points" );
 		}
 		sprintf( msg, "night B_1 = %lf   B_2 = %lf   B_3 = %lf   B_4 = %lf B_5 = %lf B_6 = %lf",
-				 params.a_night[0], params.a_night[1], params.a_night[2], 
+				 params.a_night[0], params.a_night[1], params.a_night[2],
 				 params.a_night[3], params.a_night[4], params.a_night[5] );
 		logfile->debug( msg );
 
@@ -588,10 +586,10 @@ int multich_processing( const TMultichParams &mParams,
 			}
 			if( j == col1 ) {
 				angle = angle1;
-			} 
+			}
 			else if( j == col2 ) {
 				angle = angle2;
-			} 
+			}
 			else {
 				angle = angle1 + (angle2 - angle1)*double(j-col1)/double(col2-col1);
 			}
@@ -630,8 +628,8 @@ int multich_processing( const TMultichParams &mParams,
 			if( in3_data )
 				t3 = in3_data[pix] * in3_blk0.ka + in3_blk0.kb + KELVIN0;
 			double t5 = in5_data[pix] * in5_blk0.ka + in5_blk0.kb + KELVIN0;
- 
-			double T_day = -50.0;	
+
+			double T_day = -50.0;
 			int T_day_exist = 1;
 			if( mParams.day_type == 'M' ) {
 				double A1 = mParams.a_day[0];
@@ -645,15 +643,15 @@ int multich_processing( const TMultichParams &mParams,
 				double A2 = mParams.a_day[1];
 				double A3 = mParams.a_day[2];
 				double A4 = mParams.a_day[3];
-				if( fabs(1.0 - delta45*A2) < 0.1 ) 
+				if( fabs(1.0 - delta45*A2) < 0.1 )
 					T_day_exist = 0;
 				else {
 					T_day = (t4*A1 + delta45*A3*(theta[j] -1.0)+A4) /
-				        	(1.0 - delta45*A2);  // У нас пока нет оценок Tsfc, 
+				        	(1.0 - delta45*A2);  // У нас пока нет оценок Tsfc,
 					        // необходимых для вычисления NLSST поэтому мы вынуждены...
 				}
 			}
-			else { // if( params.day_type == 'T' ) 
+			else { // if( params.day_type == 'T' )
 				if( in3_data ){
 					double A1 = mParams.a_day[0];
 					double A2 = mParams.a_day[1];
@@ -661,15 +659,15 @@ int multich_processing( const TMultichParams &mParams,
 					double A4 = mParams.a_day[3];
 					double A5 = mParams.a_day[4];
 					double A6 = mParams.a_day[5];
-					T_day = A1*t4 + A2*t3 + A3*t5 + 
+					T_day = A1*t4 + A2*t3 + A3*t5 +
 					        A4*delta45*(theta[j]-1.0) + A5*(theta[j]-1.0)+A6;
 				}
 				else {
 					T_day_exist = 0;
-				} 
+				}
 			}
 
-			double T_night = -50.0;	
+			double T_night = -50.0;
 			int T_night_exist = 1;
 			if( mParams.night_type == 'M' ) {
 				double A1 = mParams.a_night[0];
@@ -683,15 +681,15 @@ int multich_processing( const TMultichParams &mParams,
 				double A2 = mParams.a_night[1];
 				double A3 = mParams.a_night[2];
 				double A4 = mParams.a_night[3];
-				if( fabs(1.0 - delta45*A2) < 0.1 ) 
+				if( fabs(1.0 - delta45*A2) < 0.1 )
 					T_night_exist = 0;
 				else {
 					T_night = (t4*A1 + delta45*A3*(theta[j] -1.0)+A4) /
-				        	(1.0 - delta45*A2);  // У нас пока нет оценок Tsfc, 
+				        	(1.0 - delta45*A2);  // У нас пока нет оценок Tsfc,
 					        // необходимых для вычисления NLSST поэтому мы вынуждены...
 				}
 			}
-			else { // if( params.night_type == 'T' ) 
+			else { // if( params.night_type == 'T' )
 				if( in3_data ){
 					double A1 = mParams.a_night[0];
 					double A2 = mParams.a_night[1];
@@ -699,25 +697,25 @@ int multich_processing( const TMultichParams &mParams,
 					double A4 = mParams.a_night[3];
 					double A5 = mParams.a_night[4];
 					double A6 = mParams.a_night[5];
-					T_night = A1*t4 + A2*t3 + A3*t5 + 
+					T_night = A1*t4 + A2*t3 + A3*t5 +
 					        A4*delta45*(theta[j]-1.0) + A5*(theta[j]-1.0)+A6;
 				}
 				else {
 					T_night_exist = 0;
-				} 
+				}
 			}
 
 			if( angle > mParams.angle_day ) {    // Обработка для дневных точек
 				if ( (delta45 < mParams.min_delta_day) ||
-				     (delta45 > mParams.max_delta_day) ) 
+				     (delta45 > mParams.max_delta_day) )
 				{
 					out_data[pix] = lost_point;
-				} 
+				}
 				else {
 					if( T_day_exist ){
 						chmFloat[pix] = T_day;
 						out_data[pix] = 1;
-					} 
+					}
 					else if ( T_night_exist ){
 						chmFloat[pix] = T_night;
 						out_data[pix] = 1;
@@ -728,7 +726,7 @@ int multich_processing( const TMultichParams &mParams,
 						out_data[pix] = lost_point;
 					}
 				}
-			} 
+			}
 			else if( angle < mParams.angle_night ) {    // Обработка для ночных точек
 				if ((delta45 < mParams.min_delta_night) ||
 				    (delta45 > mParams.max_delta_night)) {
@@ -737,7 +735,7 @@ int multich_processing( const TMultichParams &mParams,
 					if( T_night_exist ){
 						chmFloat[pix] = T_night;
 						out_data[pix] = 1;
-					} 
+					}
 					else if ( T_day_exist ){
 						chmFloat[pix] = T_day;
 						out_data[pix] = 1;
@@ -753,14 +751,14 @@ int multich_processing( const TMultichParams &mParams,
 				if( (delta45 < mParams.min_delta_night) ||
 				      (delta45 < mParams.min_delta_day)   ||
 				      (delta45 > mParams.max_delta_night) ||
-				      (delta45 > mParams.max_delta_day) ) 
+				      (delta45 > mParams.max_delta_day) )
 				{
 					out_data[pix] = lost_point;
 				} else {
 					if( T_day_exist && T_night_exist ){
-						double k1 = (angle - mParams.angle_night) / 
+						double k1 = (angle - mParams.angle_night) /
 						            (mParams.angle_day - mParams.angle_night);
-						double k2 = (mParams.angle_day - angle) / 
+						double k2 = (mParams.angle_day - angle) /
 						            (mParams.angle_day - mParams.angle_night);
 						double a = T_day * k1 + T_night * k2;
 						chmFloat[pix] = a;

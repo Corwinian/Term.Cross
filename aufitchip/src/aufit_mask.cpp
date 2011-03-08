@@ -12,10 +12,11 @@
 #include <tgdb.hpp>
 #include <kr_stjudent.hpp>
 
+using namespace std;
 void errorMessage( const char * error_message_text );
 void print_log( const char * message_text ) ;
 
-TAufitChipMask :: TAufitChipMask( char fMaskChipBaseFileDir[MAX_PATH], long scale, long navigation_error_line, long navigation_error_column,
+TAufitChipMask :: TAufitChipMask( string &fMaskChipBaseFileDir, long scale, long navigation_error_line, long navigation_error_column,
 								  TNOAAImageParams * nip, TIniSatParams * isp, TStraightReferencer * sr, TInverseReferencer * ir, const TCorrectionParams & cop,
 								  long nrfc, char * mask_cloudy, bool channel1, short * calibr_data1, short max_value1, double Ka1, double Kb1,
 								  bool channel2, short * calibr_data2, short max_value2, double Ka2, double Kb2 ) :
@@ -89,14 +90,15 @@ TAufitChipMask :: ~TAufitChipMask() {
 }
 
 
-void TAufitChipMask :: loadDataMask( char fMaskFileDir[MAX_PATH] ) throw( TAccessExc ) {
+void TAufitChipMask :: loadDataMask( string &fMaskFileDir ) throw( TAccessExc ) {
 	TAccessExc ae1( 1, "ERROR: Ошибка доступа к файлу данных региональной маски суша/море!!!" );
 
 	// Конструирование полного имени файла маски.
 	// Проверка существования каталога fMaskandChipBaseDir.
 	char drive[MAX_DRIVE], dir[MAX_DIR], /*fname[MAX_FNAME],*/ path[MAX_PATH];
-	if( check_dir( fMaskFileDir ) == 0 )
-		splitpath( fMaskFileDir, drive, dir, 0, 0 );
+	if( check_dir( fMaskFileDir.c_str() ) == 0 )
+		#warning ацкое зло, но мне щас лень думать
+		splitpath(const_cast<char *>(fMaskFileDir.c_str()), drive, dir, 0, 0 );
 	else {
 		getcwd( path, MAX_PATH );
 		int t = strlen(path);
@@ -127,15 +129,16 @@ void TAufitChipMask :: loadDataMask( char fMaskFileDir[MAX_PATH] ) throw( TAcces
 }
 
 
-void TAufitChipMask :: iniChipList( char fBaseChipsFileDir[MAX_PATH] ) throw( TAccessExc, TParamExc ) {
+void TAufitChipMask :: iniChipList( std::string &fBaseChipsFileDir ) throw( TAccessExc, TParamExc ) {
 	TAccessExc ae1( 1, "ERROR: Ошибка доступа к файлу данных базы чипов!!!" );
 	TParamExc pe1( 1, "ERROR: Косяки в базе чипов?!!" );
 
 	char drive[MAX_DRIVE], dir[MAX_DIR], /*fname[MAX_FNAME],*/ path[MAX_PATH];
 	// Конструирование полного имени файла базы чипов.
 	// Проверка существования каталога fMaskandChipBaseDir.
-	if( check_dir( fBaseChipsFileDir ) == 0 )
-		splitpath( fBaseChipsFileDir, drive, dir, 0, 0 );
+	if( check_dir( fBaseChipsFileDir.c_str() ) == 0 )
+		#warning ацкое зло, но мне щас лень думать
+		splitpath(const_cast<char *>(fBaseChipsFileDir.c_str()), drive, dir, 0, 0 );
 	else {
 		getcwd( path, MAX_PATH );
 		int t = strlen(path);
@@ -639,7 +642,7 @@ void TAufitChipMask :: resultContour_to_pcx(  char file_path[MAX_PATH], TDChip* 
 }
 
 
-bool TAufitChipMask :: result_MaskorContourChips_to_pcx( uint8_t option_chips_to_pcx,  char fGPCXDir[MAX_PATH], char fDataFilePath[MAX_PATH] ) throw( TAccessExc ) {
+bool TAufitChipMask :: result_MaskorContourChips_to_pcx( uint8_t option_chips_to_pcx,  string& fGPCXDir, string& fDataFilePath) throw( TAccessExc ) {
 	switch( option_chips_to_pcx ) {
 	case 1:
 		print_log( "Запись результатов (в виде pcx-файлов) наложения маски суша/море\nдля чипов изображения без фильтрации облачности." );
@@ -672,11 +675,13 @@ bool TAufitChipMask :: result_MaskorContourChips_to_pcx( uint8_t option_chips_to
 		if( chip->fChipType[0] == TDChip::GraundChip ) {
 			i++;
 			// Создание имени PCX-файла.
-			splitpath( fDataFilePath, drive, dir, fname, 0 );
+			#warning Ацкое зло, ломы щас думать
+			splitpath( const_cast<char *>(fDataFilePath.c_str()), drive, dir, fname, 0 );
 			int l = strlen( fname );
 			char *p = fname + l;
 			sprintf( p, "_%d_%ld", 4, i );
-			splitpath( fGPCXDir, drive, dir, 0, 0 );
+			#warning Ацкое зло, ломы щас думать
+			splitpath( const_cast<char *>(fGPCXDir.c_str()), drive, dir, 0, 0 );
 			makepath( file_path, drive, dir, fname, "pcx" );
 
 			try {
@@ -691,11 +696,14 @@ bool TAufitChipMask :: result_MaskorContourChips_to_pcx( uint8_t option_chips_to
 		if( chip->fChannels_forCalcShifts[1] && chip->fChipType[1] == TDChip::GraundChip ) {
 			j++;
 			// Создание имени PCX-файла.
-			splitpath( fDataFilePath, drive, dir, fname, 0 );
+			#warning Ацкое зло, ломы щас думать
+			splitpath( const_cast<char *>(fDataFilePath.c_str()), drive, dir, fname, 0 );
 			int l = strlen( fname );
 			char *p = fname + l;
 			sprintf( p, "_%d_%ld", 2, j );
-			splitpath( fGPCXDir, drive, dir, 0, 0 );
+			#warning Ацкое зло, ломы щас думать
+			splitpath( const_cast<char *>(fGPCXDir.c_str()), drive, dir, 0, 0 );
+
 			makepath( file_path, drive, dir, fname, "pcx" );
 
 			try {
@@ -713,7 +721,7 @@ bool TAufitChipMask :: result_MaskorContourChips_to_pcx( uint8_t option_chips_to
 }
 
 
-bool TAufitChipMask :: result_MaskorContour_GraundChipsorautoGCPs_to_pcx( bool graund_or_gcp, bool mask_or_contour,  char fGPCXDir[MAX_PATH], char fDataFilePath[MAX_PATH] ) throw( TAccessExc ) {
+bool TAufitChipMask :: result_MaskorContour_GraundChipsorautoGCPs_to_pcx( bool graund_or_gcp, bool mask_or_contour,  string &fGPCXDir, string &fDataFilePath) throw( TAccessExc ) {
 	if( !graund_or_gcp ) {
 		if( !mask_or_contour )
 			print_log( "Запись результатов (в виде pcx-файлов) наложения берегового контура\nс использованием вычисленных смещений опорных чипов." );
@@ -731,10 +739,7 @@ bool TAufitChipMask :: result_MaskorContour_GraundChipsorautoGCPs_to_pcx( bool g
 	unsigned long i = 0, j = 0, N = numberOfGraundChips();   // Число опорных чипов или autoGCPs.
 
 	if( N <= 0 ) {
-		if( !graund_or_gcp )
-			print_log( "WARNING: Отсутствуют опорные чипы!" );
-		else
-			print_log( "WARNING: Отсутствуют autoGCPs!" );
+		print_log( !graund_or_gcp  ? "WARNING: Отсутствуют опорные чипы!" :"WARNING: Отсутствуют autoGCPs!"  );
 		return false;
 	}
 
@@ -746,11 +751,13 @@ bool TAufitChipMask :: result_MaskorContour_GraundChipsorautoGCPs_to_pcx( bool g
 		if( chip->fChipType[0] == TDChip::GraundChip ) {
 			i++;
 			// Создание имени PCX-файла.
-			splitpath( fDataFilePath, drive, dir, fname, 0 );
+			#warning ацкое зло, но думать ломы
+			splitpath( const_cast<char *>(fDataFilePath.c_str()), drive, dir, fname, 0 );
 			int l = strlen( fname );
 			char *p = fname + l;
 			sprintf( p, "_%d_%ld", 4, i );
-			splitpath( fGPCXDir, drive, dir, 0, 0 );
+			#warning ацкое зло, но думать ломы
+			splitpath( const_cast<char *>(fGPCXDir.c_str()), drive, dir, 0, 0 );
 			if( !graund_or_gcp ) {
 				l = strlen( dir );
 				p = dir + l;
@@ -773,11 +780,13 @@ bool TAufitChipMask :: result_MaskorContour_GraundChipsorautoGCPs_to_pcx( bool g
 		if( chip->fChannels_forCalcShifts[1] && chip->fChipType[1] == TDChip::GraundChip ) {
 			j++;
 			// Создание имени PCX-файла.
-			splitpath( fDataFilePath, drive, dir, fname, 0 );
+			#warning ацкое зло, но думать ломы
+			splitpath(const_cast<char *>(fDataFilePath.c_str()), drive, dir, fname, 0 );
 			int l = strlen( fname );
 			char *p = fname + l;
 			sprintf( p, "_%d_%ld", 2, j );
-			splitpath( fGPCXDir, drive, dir, 0, 0 );
+			#warning ацкое зло, но думать ломы
+			splitpath(const_cast<char *>(fGPCXDir.c_str()), drive, dir, 0, 0 );
 			if( !graund_or_gcp ) {
 				l = strlen( dir );
 				p = dir + l;

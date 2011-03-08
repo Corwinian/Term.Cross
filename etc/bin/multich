@@ -1,1 +1,13 @@
-cproc
+#! /bin/bash
+
+ENC=$TERM_ENC
+
+if [ "" = "$TERM_ENC" ]; then
+    ENC='utf-8'
+fi
+
+if [ -n "$TERM_USESTATIC" ]; then
+	$0.static.exe $* | iconv -f cp866 -t $ENC
+else
+	$0.exe $* | iconv -f cp866 -t $ENC
+fi

@@ -99,7 +99,12 @@ int isFloatingPoint( const char * s ) {
 uint32_t padOn32BitBound( uint32_t value ) {
 	return ((value + 3) & 0xFFFFFFFC);
 }
-
+#warning заменить на const string&
+int check_dir( const std::string& path  )
+{
+	#warning адское зло потом переписать
+	return check_dir(path.c_str());
+}
 int check_dir( const char * path ) {
 	int l;
 	if( !(l = strlen( path )) )
@@ -169,6 +174,9 @@ void memDump( FILE * f, const char * b, uint32_t l ) {
 		fprintf( f, "\n" );
 	}
 }
+#warning адское зло потом переписать
+int splitpath (std::string& path, char* drive, char* dir, char* name, char* ext)
+{ return splitpath(const_cast<char *>(path.c_str()), drive, dir, name, ext);}
 
 int splitpath(char* path, char* drive, char* dir, char* name, char* ext) {
 	if(!path)

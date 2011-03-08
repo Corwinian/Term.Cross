@@ -15,7 +15,7 @@
 typedef long long TCoordinates;
 struct TRegionFiltrCloudy
 {
-    void loadRegionsforFiltrCloudyCfg( char ParametrsRegionsforFiltrCloudyDir[MAX_PATH] ) throw( TAccessExc );
+    void loadRegionsforFiltrCloudyCfg( std::string &ParametrsRegionsforFiltrCloudyDir ) throw( TAccessExc );
 
     static TCoordinates NamberRegionsforFiltrCloudy;
 

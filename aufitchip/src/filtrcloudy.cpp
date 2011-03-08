@@ -9,10 +9,13 @@
 #include <c_lib.hpp>
 #include <filtrcloudy.hpp>
 
+using namespace libconfig;
+using namespace std;
+
 // Значение, которым мы будем отмечать отфильтрованные пиксели
 const char TFiltrCloudy::lostValue = 1;
 
-const double TFiltrParams::sinalpha_minlimit=10.0*DR;
+const double TFiltrParams::sinalpha_minlimit = 10.0*DR;
 
 const char * TFiltrParams::FILTR_ALBEDO_1_ENABLE[5] = {
 "FILTR_PRIMORYE_ALBEDO_1_ENABLE",
@@ -247,8 +250,8 @@ const char * TFiltrParams::FILTR_STAT_ENABLE[5] = {
 
 void errorMessage( const char * error_message_text ) ;
 
-TFiltrCloudy::TFiltrCloudy( char ParametrsFiltrCloudyDir[MAX_PATH], double j_d, int month, char * mcloudy, TStraightReferencer * sr,
-                            bool availableChs[5], short * calibrData[5], uint16_t maxPixelValue[5], double ka[5], double kb[5] ) :
+TFiltrCloudy::TFiltrCloudy( std::string ParametrsFiltrCloudyDir, double j_d, int month, char * mcloudy, TStraightReferencer * sr,
+							bool availableChs[5], short * calibrData[5], uint16_t maxPixelValue[5], double ka[5], double kb[5] ) :
                             julian_date( j_d )
                             ,fCloudyMask( mcloudy )
                             ,fSR( sr )
@@ -284,14 +287,15 @@ TFiltrCloudy::~TFiltrCloudy()
 }
 
 
-void TFiltrCloudy::readCfg( char ParametrsFiltrCloudyDir[MAX_PATH], int month ) throw( TAccessExc, TRequestExc )
+void TFiltrCloudy::readCfg( string &ParametrsFiltrCloudyDir, int month ) throw( TAccessExc, TRequestExc )
 {
 	TAccessExc ae1( 1, "ERROR: Ошибка доступа к cfg-файлу параметров фильтрации облачности!!!" );
 
 	char drive[MAX_DRIVE], dir[MAX_DIR], path[MAX_PATH];
 	// Конструирование полного имени cfg-файла параметров регионов для фильтрации облачности.
 	// Проверка существования каталога ParametrsFiltrCloudyDir.
-	if( check_dir( ParametrsFiltrCloudyDir ) == 0 ) splitpath( ParametrsFiltrCloudyDir, drive, dir, 0, 0 );
+	if( check_dir( ParametrsFiltrCloudyDir ) == 0 )
+		splitpath( ParametrsFiltrCloudyDir, drive, dir, 0, 0 );
 	else{
 		getcwd( path, MAX_PATH );
 		int t = strlen(path);
@@ -307,9 +311,9 @@ void TFiltrCloudy::readCfg( char ParametrsFiltrCloudyDir[MAX_PATH], int month ) 
 
     makepath( path, drive, dir, fname, "cfg" );
 
-    TCfg * fCfg;
+    Config  fCfg;
     try{
-        fCfg = new TCfg( path );
+        fCfg.readFile( path );
     }
     catch ( ... ){
         throw ae1;
@@ -318,152 +322,93 @@ void TFiltrCloudy::readCfg( char ParametrsFiltrCloudyDir[MAX_PATH], int month ) 
     // Здесь должно быть чтение параметров фильтрации
 
     try{
-        readFiltrParams( *fCfg );
+        readFiltrParams( fCfg.getRoot()["Filtr"] );
     }
     catch ( TRequestExc & re1 ){
         throw;
     }
-
-    delete fCfg;
 }
 
 
-void TFiltrCloudy::readFiltrParams( TCfg &cfg ) throw ( TRequestExc )
+void TFiltrCloudy::readFiltrParams( const Setting &cfg ) throw ( TRequestExc )
 {
     TRequestExc re1( 1, "ERROR: Недопустимый формат cfg-файла параметров фильтрации облачности!!!" );
 
-    for( int i = 0; i < 5; i++ ){
-        if(
-            readFlg( cfg, FP.FILTR_ALBEDO_1_ENABLE[i]             , FP.albedo1_flag[i]              ) != 0 ||
-            readFlg( cfg, FP.FILTR_ALBEDO_2_ENABLE[i]             , FP.albedo2_flag[i]              ) != 0 ||
-            readFlg( cfg, FP.FILTR_NDVI_ENABLE[i]                 , FP.ndvi_flag[i]                 ) != 0 ||
-            readFlg( cfg, FP.FILTR_ASSENT_ALBEDO_ENABLE[i]        , FP.assent_flag[i]               ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_ALBEDO_1_VALUE[i]          , FP.max_albedo1[i]               ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_ALBEDO_2_VALUE[i]          , FP.max_albedo2[i]               ) != 0 ||
-            readDbl( cfg, FP.FILTR_MIN_NDVI_VALUE[i]              , FP.min_ndvi[i]                  ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_NDVI_VALUE[i]              , FP.max_ndvi[i]                  ) != 0 ||
-            readFlg( cfg, FP.FILTR_TEMP_ENABLE[i]                 , FP.temp_flag[i]                 ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_TEMP[i]                    , FP.max_temp[i]                  ) != 0 ||
-            readDbl( cfg, FP.FILTR_MIN_TEMP[i]                    , FP.min_temp[i]                  ) != 0 ||
-            readFlg( cfg, FP.FILTR_DAY_DELTA45_ENABLE[i]          , FP.day_delta45_flag[i]          ) != 0 ||
-            readDbl( cfg, FP.FILTR_MIN_DAY_DELTA45[i]             , FP.day_min_delta45[i]           ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_DAY_DELTA45[i]             , FP.day_max_delta45[i]           ) != 0 ||
-            readFlg( cfg, FP.FILTR_NIGHT_DELTA45_ENABLE[i]        , FP.night_delta45_flag[i]        ) != 0 ||
-            readDbl( cfg, FP.FILTR_MIN_NIGHT_DELTA45[i]           , FP.night_min_delta45[i]         ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_NIGHT_DELTA45[i]           , FP.night_max_delta45[i]         ) != 0 ||
-            readFlg( cfg, FP.FILTR_DAY_DELTA34_ENABLE[i]          , FP.day_delta34_flag[i]          ) != 0 ||
-            readDbl( cfg, FP.FILTR_MIN_DAY_DELTA34[i]             , FP.day_min_delta34[i]           ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_DAY_DELTA34[i]             , FP.day_max_delta34[i]           ) != 0 ||
-            readFlg( cfg, FP.FILTR_NIGHT_DELTA34_ENABLE[i]        , FP.night_delta34_flag[i]        ) != 0 ||
-            readDbl( cfg, FP.FILTR_MIN_NIGHT_DELTA34[i]           , FP.night_min_delta34[i]         ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_NIGHT_DELTA34[i]           , FP.night_max_delta34[i]         ) != 0 ||
-            readFlg( cfg, FP.FILTR_DAY_DELTA35_ENABLE[i]          , FP.day_delta35_flag[i]          ) != 0 ||
-            readDbl( cfg, FP.FILTR_MIN_DAY_DELTA35[i]             , FP.day_min_delta35[i]           ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_DAY_DELTA35[i]             , FP.day_max_delta35[i]           ) != 0 ||
-            readFlg( cfg, FP.FILTR_NIGHT_DELTA35_ENABLE[i]        , FP.night_delta35_flag[i]        ) != 0 ||
-            readDbl( cfg, FP.FILTR_MIN_NIGHT_DELTA35[i]           , FP.night_min_delta35[i]         ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_NIGHT_DELTA35[i]           , FP.night_max_delta35[i]         ) != 0 ||
-            readFlg( cfg, FP.FILTR_CLOUD_BORDER_ENABLE[i]         , FP.cloud_border_flag[i]         ) != 0 ||
-            readInt( cfg, FP.FILTR_CLOUD_BORDER_WINDOW_SIZE[i]    , FP.cloud_border_win_size[i]     ) != 0 ||
-            readDbl( cfg, FP.FILTR_MAX_FILTERED_PERCENT[i]        , FP.max_filtered_percent[i]      ) != 0 ||
-            readFlg( cfg, FP.FILTR_STAT_ENABLE[i]                 , FP.stat_flag[i]                 ) != 0
-          ) throw re1;
+    for( int i = 0; i < FP.Size; i++ )
+	{
+		if(
+
+			!(cfg.lookupValue(FP.FILTR_ALBEDO_1_ENABLE[i]			 , FP.albedo1_flag[i]              ) &&
+            cfg.lookupValue(FP.FILTR_ALBEDO_2_ENABLE[i]				 , FP.albedo2_flag[i]			   ) &&
+			cfg.lookupValue( FP.FILTR_ALBEDO_2_ENABLE[i]             , FP.albedo2_flag[i]              ) &&
+            cfg.lookupValue( FP.FILTR_NDVI_ENABLE[i]                 , FP.ndvi_flag[i]                 ) &&
+            cfg.lookupValue( FP.FILTR_ASSENT_ALBEDO_ENABLE[i]        , FP.assent_flag[i]               ) &&
+            cfg.lookupValue( FP.FILTR_MAX_ALBEDO_1_VALUE[i]          , FP.max_albedo1[i]               ) &&
+            cfg.lookupValue( FP.FILTR_MAX_ALBEDO_2_VALUE[i]          , FP.max_albedo2[i]               ) &&
+            cfg.lookupValue( FP.FILTR_MIN_NDVI_VALUE[i]              , FP.min_ndvi[i]                  ) &&
+            cfg.lookupValue( FP.FILTR_MAX_NDVI_VALUE[i]              , FP.max_ndvi[i]                  ) &&
+            cfg.lookupValue( FP.FILTR_TEMP_ENABLE[i]                 , FP.temp_flag[i]                 ) &&
+            cfg.lookupValue( FP.FILTR_MAX_TEMP[i]                    , FP.max_temp[i]                  ) &&
+            cfg.lookupValue( FP.FILTR_MIN_TEMP[i]                    , FP.min_temp[i]                  ) &&
+            cfg.lookupValue( FP.FILTR_DAY_DELTA45_ENABLE[i]          , FP.day_delta45_flag[i]          ) &&
+            cfg.lookupValue( FP.FILTR_MIN_DAY_DELTA45[i]             , FP.day_min_delta45[i]           ) &&
+            cfg.lookupValue( FP.FILTR_MAX_DAY_DELTA45[i]             , FP.day_max_delta45[i]           ) &&
+            cfg.lookupValue( FP.FILTR_NIGHT_DELTA45_ENABLE[i]        , FP.night_delta45_flag[i]        ) &&
+            cfg.lookupValue( FP.FILTR_MIN_NIGHT_DELTA45[i]           , FP.night_min_delta45[i]         ) &&
+            cfg.lookupValue( FP.FILTR_MAX_NIGHT_DELTA45[i]           , FP.night_max_delta45[i]         ) &&
+            cfg.lookupValue( FP.FILTR_DAY_DELTA34_ENABLE[i]          , FP.day_delta34_flag[i]          ) &&
+            cfg.lookupValue( FP.FILTR_MIN_DAY_DELTA34[i]             , FP.day_min_delta34[i]           ) &&
+            cfg.lookupValue( FP.FILTR_MAX_DAY_DELTA34[i]             , FP.day_max_delta34[i]           ) &&
+            cfg.lookupValue( FP.FILTR_NIGHT_DELTA34_ENABLE[i]        , FP.night_delta34_flag[i]        ) &&
+            cfg.lookupValue( FP.FILTR_MIN_NIGHT_DELTA34[i]           , FP.night_min_delta34[i]         ) &&
+            cfg.lookupValue( FP.FILTR_MAX_NIGHT_DELTA34[i]           , FP.night_max_delta34[i]         ) &&
+            cfg.lookupValue( FP.FILTR_DAY_DELTA35_ENABLE[i]          , FP.day_delta35_flag[i]          ) &&
+            cfg.lookupValue( FP.FILTR_MIN_DAY_DELTA35[i]             , FP.day_min_delta35[i]           ) &&
+            cfg.lookupValue( FP.FILTR_MAX_DAY_DELTA35[i]             , FP.day_max_delta35[i]           ) &&
+            cfg.lookupValue( FP.FILTR_NIGHT_DELTA35_ENABLE[i]        , FP.night_delta35_flag[i]        ) &&
+            cfg.lookupValue( FP.FILTR_MIN_NIGHT_DELTA35[i]           , FP.night_min_delta35[i]         ) &&
+            cfg.lookupValue( FP.FILTR_MAX_NIGHT_DELTA35[i]           , FP.night_max_delta35[i]         ) &&
+            cfg.lookupValue( FP.FILTR_CLOUD_BORDER_ENABLE[i]         , FP.cloud_border_flag[i]         ) &&
+            cfg.lookupValue(FP.FILTR_CLOUD_BORDER_WINDOW_SIZE[i]    , FP.cloud_border_win_size[i]     ) &&
+            cfg.lookupValue( FP.FILTR_MAX_FILTERED_PERCENT[i]        , FP.max_filtered_percent[i]      ) &&
+            cfg.lookupValue( FP.FILTR_STAT_ENABLE[i]                 , FP.stat_flag[i]                 ))
+          )throw re1;
     }
 }
 
-
-int TFiltrCloudy::readFlg( TCfg& cfg, const char *name, int& flag ) throw ( TRequestExc )
+bool defineRegionFiltr( long x, long y, size_t count,  TCoordinates *X,  TCoordinates *Y)
 {
-    const char *s;
-    try {
-        s = cfg.getValue( name );
-    }
-    catch( TRequestExc & re ){
-        throw;
-    }
-
-    if( s[0] == 0 || ( s[0] == '0' && s[1] == 0 ) ) {
-        flag = 0;
-        return 0;
-    }
-    if( s[0] == '1' && s[1] == 0 ) {
-        flag = 1;
-        return 0;
-    }
-
-    return 1;
+	#warning не забыть избавиться от дефайнов
+    for (int i =0; i + 1< count; i +=2 )
+	{
+		if( x > X[i] && x < X[i + 1]
+			&& y > Y[i] && y < Y[i +1])
+			return false;
+	}
+	return true;
 }
-
-
-int TFiltrCloudy::readDbl( TCfg& cfg, const char *name, double &val ) throw (TRequestExc)
-{
-    const char *s;
-    char *rest;
-    try {
-      s = cfg.getValue( name );
-    }
-    catch( TRequestExc & re ){
-        throw;
-    }
-
-    double a = strtod( s, &rest );
-    while( isspace(*rest) ) rest++;
-    if( *rest != 0 ) {
-        return 1;
-    }
-    val = a;
-    return 0;
-}
-
-
-int TFiltrCloudy::readInt( TCfg& cfg, const char *name, int &val ) throw (TRequestExc)
-{
-    const char *s;
-    char *rest;
-    try {
-        s = cfg.getValue( name );
-    }
-    catch( TRequestExc & re ){
-        throw;
-    }
-    long a = strtol( s, &rest, 10 );
-    while( isspace(*rest) ) rest++;
-    if( *rest != 0 ) {
-        return 1;
-    }
-    val = a;
-    return 0;
-}
-
 
 void TFiltrCloudy::defineRegionFiltrCloudy( long x, long y )
 {
-    // Приморье.
-    if( x > fRFC.X1Primorye && x < fRFC.X2Primorye && y > fRFC.Y1Primorye && y < fRFC.Y2Primorye ){ freg = 0; return; }
-    if( x > fRFC.X3Primorye && x < fRFC.X4Primorye && y > fRFC.Y3Primorye && y < fRFC.Y4Primorye ){ freg = 0; return; }
-    if( x > fRFC.X5Primorye && x < fRFC.X6Primorye && y > fRFC.Y5Primorye && y < fRFC.Y6Primorye ){ freg = 0; return; }
-    if( x > fRFC.X7Primorye && x < fRFC.X8Primorye && y > fRFC.Y7Primorye && y < fRFC.Y8Primorye ){ freg = 0; return; }
+	// Приморье.
+	#warning не забыть избавиться от дефайнов
+	if (defineRegionFiltr(x, y, PRIMORYE_COUNT, fRFC.XPrimorye, fRFC.YPrimorye) )
+		freg = 0;
+	 // Япония и Корея.
+	else if (defineRegionFiltr(x, y, JAPAN_KOREA_COUNT, fRFC.XJapanKorea, fRFC.YJapanKorea))
+		freg = 1;
 
-    // Япония и Корея.
-    if( x > fRFC.X1JapanKorea && x < fRFC.X2JapanKorea && y > fRFC.Y1JapanKorea && y < fRFC.Y2JapanKorea ){ freg = 1; return; }
-    if( x > fRFC.X3JapanKorea && x < fRFC.X4JapanKorea && y > fRFC.Y3JapanKorea && y < fRFC.Y4JapanKorea ){ freg = 1; return; }
-    if( x > fRFC.X5JapanKorea && x < fRFC.X6JapanKorea && y > fRFC.Y5JapanKorea && y < fRFC.Y6JapanKorea ){ freg = 1; return; }
-
-    // Материковые озера.
-    if( x > fRFC.X1MaterikLikes && x < fRFC.X2MaterikLikes && y > fRFC.Y1MaterikLikes && y < fRFC.Y2MaterikLikes ){ freg = 2; return; }
-    if( x > fRFC.X3MaterikLikes && x < fRFC.X4MaterikLikes && y > fRFC.Y3MaterikLikes && y < fRFC.Y4MaterikLikes ){ freg = 2; return; }
-    if( x > fRFC.X5MaterikLikes && x < fRFC.X6MaterikLikes && y > fRFC.Y5MaterikLikes && y < fRFC.Y6MaterikLikes ){ freg = 2; return; }
+	// Материковые озера.
+    else if (defineRegionFiltr(x, y, MATERIK_LIKES_COUNT, fRFC.XMaterikLikes, fRFC.YMaterikLikes))
+		freg = 2;
 
     // Сахалин и Курилы.
-    if( x > fRFC.X1SahalinKurils && x < fRFC.X2SahalinKurils && y > fRFC.Y1SahalinKurils && y < fRFC.Y2SahalinKurils ){ freg = 3; return; }
-    if( x > fRFC.X3SahalinKurils && x < fRFC.X4SahalinKurils && y > fRFC.Y3SahalinKurils && y < fRFC.Y4SahalinKurils ){ freg = 3; return; }
+    else if (defineRegionFiltr(x, y, SAHALIN_KURILS_COUNT, fRFC.XSahalinKurils, fRFC.YSahalinKurils))
+		freg = 3;
 
-    // Камчатка и Охотское море.
-    if( x > fRFC.X1KamchatkaOhotskoe && x < fRFC.X2KamchatkaOhotskoe && y > fRFC.Y1KamchatkaOhotskoe && y < fRFC.Y2KamchatkaOhotskoe ){ freg = 4; return; }
-    if( x > fRFC.X3KamchatkaOhotskoe && x < fRFC.X4KamchatkaOhotskoe && y > fRFC.Y3KamchatkaOhotskoe && y < fRFC.Y4KamchatkaOhotskoe ){ freg = 4; return; }
-    if( x > fRFC.X5KamchatkaOhotskoe && x < fRFC.X6KamchatkaOhotskoe && y > fRFC.Y5KamchatkaOhotskoe && y < fRFC.Y6KamchatkaOhotskoe ){ freg = 4; return; }
-    if( x > fRFC.X7KamchatkaOhotskoe && x < fRFC.X8KamchatkaOhotskoe && y > fRFC.Y7KamchatkaOhotskoe && y < fRFC.Y8KamchatkaOhotskoe ){ freg = 4; return; }
-    if( x > fRFC.X9KamchatkaOhotskoe && x < fRFC.X10KamchatkaOhotskoe && y > fRFC.Y9KamchatkaOhotskoe && y < fRFC.Y10KamchatkaOhotskoe ){ freg = 4; return; }
+	// Камчатка и Охотское море.
+    else if (defineRegionFiltr(x, y, KAMCHATKA_OHOTSKOE_COUNT, fRFC.XKamchatkaOhotskoe , fRFC.YKamchatkaOhotskoe ))
+		freg = 4;
 
     freg = 0;
 }

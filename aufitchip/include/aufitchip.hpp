@@ -15,13 +15,13 @@
 
 struct TConfigSetting
 {
-    char fSourceDataDir[MAX_PATH];          // местонахождение необработанных файлов данных - .a0 вместе с .clb
-	char fTargetDataDir[MAX_PATH];	         // каталог, в который следует переносить файлы с GCPs
-    char fGPCXDir[MAX_PATH];   		     // местонахождение grayscale-PCX результатов совмещения опорных чипов
-    char fLogDir[MAX_PATH];    		     // местонахождение log-файлов
-    char fStatDir[MAX_PATH];    		     // местонахождение log-файлов статистики
-    char fMaskandChipBaseDir[MAX_PATH];     // местонахождение файлов маски и базы чипов
-    char ParametrsFiltrCloudyDir[MAX_PATH]; // местонахождение конфигурационных файлов параметров для фильтрации облачности
+    std::string fSourceDataDir;          // местонахождение необработанных файлов данных - .a0 вместе с .clb
+	std::string fTargetDataDir;	         // каталог, в который следует переносить файлы с GCPs
+    std::string fGPCXDir;   		     // местонахождение grayscale-PCX результатов совмещения опорных чипов
+    std::string fLogDir;    		     // местонахождение log-файлов
+    std::string fStatDir;    		     // местонахождение log-файлов статистики
+    std::string fMaskandChipBaseDir;     // местонахождение файлов маски и базы чипов
+    std::string ParametrsFiltrCloudyDir; // местонахождение конфигурационных файлов параметров для фильтрации облачности
     int fMinMethod;                     // используемый метод минимизации: 1 - Powell, 2 - Nelder-Mead
 /*
     0   time
@@ -37,12 +37,12 @@ struct TConfigSetting
     10  m0
 */
     int fMinParams[COR_PARAM_NUM];          // флаги параметров, по которым необходимо осуществлять минимизацию штрафной функции
-    long fMaxNavigationErrorLine;           // максимально возможная ошибка первичной географической привязки по строке в пикселах.
-    long fMaxNavigationErrorColumn;         // максимально возможная ошибка первичной географической привязки по столбцу в пикселах.
-    long fMaskScale;                        // во сколько раз маска подробней изображения
-    uint8_t fFiltrCloudyforChips;              // флаг для фильтрации облачности для чипов изображения: 0 - не фильтровать; 1 - фильтровать, но не отбраковывать чипы по порогу fMaxPercentageCloudy; 2 - фильтровать и отбраковывать чипы по порогу fMaxPercentageCloudy
+    long long fMaxNavigationErrorLine;           // максимально возможная ошибка первичной географической привязки по строке в пикселах.
+    long long fMaxNavigationErrorColumn;         // максимально возможная ошибка первичной географической привязки по столбцу в пикселах.
+    long long fMaskScale;                        // во сколько раз маска подробней изображения
+    int fFiltrCloudyforChips;              // флаг для фильтрации облачности для чипов изображения: 0 - не фильтровать; 1 - фильтровать, но не отбраковывать чипы по порогу fMaxPercentageCloudy; 2 - фильтровать и отбраковывать чипы по порогу fMaxPercentageCloudy
     double fMaxPercentageCloudy;            // порог отбраковки чипов после процедуры фильтрации облачности по кол-ву отфильтрованных пикселов (включая и поисковую зону) в процентах
-    uint8_t fRepeatCalcShiftsforChips;         // флаг для повторного выполнения вычисления смещений чипов изображения, используя средние оценки полученные на первом этапе вычислений: 0 - не выполнять второй этап вычислений; 1 - выполнять второй этап вычислений
+    int fRepeatCalcShiftsforChips;         // флаг для повторного выполнения вычисления смещений чипов изображения, используя средние оценки полученные на первом этапе вычислений: 0 - не выполнять второй этап вычислений; 1 - выполнять второй этап вычислений
     double fStatisticSignificanceThreshold; // порог отбраковки опорных чипов по нормализованному значению критерия статистической значимости для 2-го канала AVHRR (день) и 4-го канала AVHRR (ночь).
     double fLinRegresCoeff_dX;              // коэффициент для поправки параметров линейной регрессии смещения по столбцу
     double fLinRegresCoeff_dY;              // коэффициент для поправки параметров линейной регрессии смещения по строке
@@ -59,7 +59,7 @@ public:
 /*
     file_path   Полный путь входного файла данных.
 */
-    TDataAVHRR( const char * file_path, bool flag_load );
+    TDataAVHRR( const std::string& file_path, bool flag_load );
 
     virtual ~TDataAVHRR();
 

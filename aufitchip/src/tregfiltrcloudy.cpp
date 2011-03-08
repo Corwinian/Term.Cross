@@ -8,23 +8,20 @@ TCoordinates TRegionFiltrCloudy::NamberRegionsforFiltrCloudy = 0L;
 
 //const size_t TRegionFiltrCloudy::PRIMORYE_COUNT =8;
 
-/*TCoordinates TRegionFiltrCloudy::X1Primorye = 0L, TRegionFiltrCloudy::Y1Primorye = 0L,
-     TRegionFiltrCloudy::X2Primorye = 0L,TRegionFiltrCloudy::Y2Primorye = 0L,
-     TRegionFiltrCloudy::X3Primorye = 0L,TRegionFiltrCloudy::Y3Primorye = 0L,
-     TRegionFiltrCloudy::X4Primorye = 0L,TRegionFiltrCloudy::Y4Primorye = 0L,
-     TRegionFiltrCloudy::X5Primorye = 0L,TRegionFiltrCloudy::Y5Primorye = 0L,
-     TRegionFiltrCloudy::X6Primorye = 0L,TRegionFiltrCloudy::Y6Primorye = 0L,
-     TRegionFiltrCloudy::X7Primorye = 0L,TRegionFiltrCloudy::Y7Primorye = 0L,
-     TRegionFiltrCloudy::X8Primorye = 0L,TRegionFiltrCloudy::Y8Primorye = 0L;
+TCoordinates TRegionFiltrCloudy::XPrimorye[PRIMORYE_COUNT] = {0L,0L, 0L, 0L, 0L, 0L, 0L, 0L},
+			 TRegionFiltrCloudy::YPrimorye[PRIMORYE_COUNT] = {0L,0L, 0L, 0L, 0L, 0L, 0L, 0L},
+			 TRegionFiltrCloudy::XJapanKorea[JAPAN_KOREA_COUNT] = {0L, 0L, 0L, 0L, 0L },
+ 			 TRegionFiltrCloudy::YJapanKorea[JAPAN_KOREA_COUNT] = {0L, 0L, 0L, 0L, 0L},
+			 TRegionFiltrCloudy::XMaterikLikes[MATERIK_LIKES_COUNT] = {0L, 3700L, 3700L, 4300L, 4300L, 4480L},
+			 TRegionFiltrCloudy::YMaterikLikes[MATERIK_LIKES_COUNT] = {0L, 0L, 0L, 0L, 0L, 0L},
+			 TRegionFiltrCloudy::XSahalinKurils[SAHALIN_KURILS_COUNT] = {0L, 0L, 0L, 0L },
+			 TRegionFiltrCloudy::YSahalinKurils[SAHALIN_KURILS_COUNT] = {0L, 0L, 0L, 0L },
+			 TRegionFiltrCloudy::XKamchatkaOhotskoe[KAMCHATKA_OHOTSKOE_COUNT] = {0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L},
+			 TRegionFiltrCloudy::YKamchatkaOhotskoe[KAMCHATKA_OHOTSKOE_COUNT] = {0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L}
+			;
+/*
 
 
-
-TCoordinates TRegionFiltrCloudy::X1JapanKorea = 0L, TRegionFiltrCloudy::Y1JapanKorea = 0L,
-     TRegionFiltrCloudy::X2JapanKorea = 0L, TRegionFiltrCloudy::Y2JapanKorea = 0L,
-     TRegionFiltrCloudy::X3JapanKorea = 0L, TRegionFiltrCloudy::Y3JapanKorea = 0L,
-     TRegionFiltrCloudy::X4JapanKorea = 0L, TRegionFiltrCloudy::Y4JapanKorea = 0L,
-     TRegionFiltrCloudy::X5JapanKorea = 0L, TRegionFiltrCloudy::Y5JapanKorea = 0L,
-     TRegionFiltrCloudy::X6JapanKorea = 0L, TRegionFiltrCloudy::Y6JapanKorea = 0L;
 
 TCoordinates TRegionFiltrCloudy::X1MaterikLikes = 0L, TRegionFiltrCloudy::Y1MaterikLikes = 0L,
      TRegionFiltrCloudy::X2MaterikLikes = 3700L, TRegionFiltrCloudy::Y2MaterikLikes = 0L,
@@ -59,13 +56,15 @@ void loadRegionforFiltrCloudy(const Setting& set, size_t count, TCoordinates *xA
 	}
 }
 
-void TRegionFiltrCloudy :: loadRegionsforFiltrCloudyCfg( char ParametrsRegionsforFiltrCloudyDir[MAX_PATH] ) throw( TAccessExc ){
+void TRegionFiltrCloudy :: loadRegionsforFiltrCloudyCfg( string &ParametrsRegionsforFiltrCloudyDir ) throw( TAccessExc ){
 	TAccessExc ae1( 1, "ERROR: Ошибка доступа к cfg-файлу регионов для фильтрации облачности!!!" );
 
 	char drive[MAX_DRIVE], dir[MAX_DIR], /*fname[MAX_FNAME],*/ path[MAX_PATH];
 	// Конструирование полного имени cfg-файла параметров регионов для фильтрации облачности.
 	// Проверка существования каталога ParametrsRegionsforFiltrCloudyDir.
-	if( check_dir( ParametrsRegionsforFiltrCloudyDir ) == 0 ) splitpath( ParametrsRegionsforFiltrCloudyDir, drive, dir, 0, 0 );
+	if( check_dir( ParametrsRegionsforFiltrCloudyDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath( const_cast<char*> (ParametrsRegionsforFiltrCloudyDir.c_str()), drive, dir, 0, 0 );
 	else{
 		getcwd( path, MAX_PATH );
 		splitpath( path, drive, dir, 0, 0 );

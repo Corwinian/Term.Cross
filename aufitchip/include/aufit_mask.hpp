@@ -17,7 +17,7 @@
 class TAufitChipMask {
 public:
 
-    TAufitChipMask( char fMaskChipBaseFileDir[MAX_PATH], long scale, long navigation_error_line, long navigation_error_column,
+    TAufitChipMask( std::string &fMaskChipBaseFileDir, long scale, long navigation_error_line, long navigation_error_column,
                     TNOAAImageParams * nip, TIniSatParams * isp, TStraightReferencer * sr, TInverseReferencer * ir, const TCorrectionParams & cop,
                     long nrfc, char * mask_cloudy, bool channel1, short * calibr_data1, short max_value1, double Ka1, double Kb1,
                     bool channel2, short * calibr_data2, short max_value2, double Ka2, double Kb2 );
@@ -32,9 +32,9 @@ public:
 
     void resultContour_to_pcx(  char[MAX_PATH], TDChip*, unsigned long, uint8_t ) throw( TAccessExc );
 
-    bool result_MaskorContourChips_to_pcx( uint8_t option_chips_to_pcx,  char fGPCXDir[MAX_PATH], char fDataFilePath[MAX_PATH] ) throw( TAccessExc );
+    bool result_MaskorContourChips_to_pcx( uint8_t option_chips_to_pcx,  std::string& fGPCXDir, std::string& fDataFilePath) throw( TAccessExc );
 
-    bool result_MaskorContour_GraundChipsorautoGCPs_to_pcx( bool graund_or_gcp, bool mask_or_contour,  char fGPCXDir[MAX_PATH], char fDataFilePath[MAX_PATH] ) throw( TAccessExc );
+    bool result_MaskorContour_GraundChipsorautoGCPs_to_pcx( bool graund_or_gcp, bool mask_or_contour,  std::string &fGPCXDir, std::string &fDataFilePath) throw( TAccessExc );
 
     void settingAvgShifts( long, double, double );
 
@@ -129,9 +129,9 @@ public:
 
 private:
 
-    void loadDataMask( char fMaskFileDir[MAX_PATH] ) throw( TAccessExc );
+    void loadDataMask( std::string &fMaskFileDir ) throw( TAccessExc );
 
-    void iniChipList( char fBaseChipsFileDir[MAX_PATH] ) throw( TAccessExc, TParamExc );
+    void iniChipList( std::string &fBaseChipsFileDir ) throw( TAccessExc, TParamExc );
 
     void buildMaskChip( TDChip * );
 

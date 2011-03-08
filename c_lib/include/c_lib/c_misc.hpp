@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <c_lib/c_types.hpp>
+#include <string>
 
 /*
     Функция проверяет, является ли строка правильной записью плавающего
@@ -29,6 +30,7 @@ uint32_t padOn32BitBound( uint32_t value );
     0	каталог существует
     1	каталога не существует или path - пустая строка
 */
+int check_dir( const std::string& path );
 int check_dir( const char * path );
 
 /*
@@ -51,6 +53,7 @@ void memDump( FILE * f, const char * buffer, uint32_t length );
 	Замена функций DOS _splitpath и _makepath, т.к. не везде они есть.
 	Под 'NIX платформами drive всегда нулевой длинны.
  */
+int splitpath(std::string& path, char* drive, char* dir, char* name, char* ext);
 int splitpath( char* path, char* drive, char* dir, char* name, char* ext);
 int makepath( char* path, const char* drive, const char* dir, const char* name, const char* ext );
 

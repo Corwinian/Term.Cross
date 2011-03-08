@@ -18,6 +18,8 @@
 #include "c_lib/c_misc.hpp"
 #include "string"
 
+#include "../strformat/strformat.hpp"
+
 #include <memory.h>
 
 #include <stdlib.h>

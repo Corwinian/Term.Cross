@@ -9,6 +9,7 @@
 //#include <c_>
 #include <astronom.hpp>
 #include <tregfiltrcloudy.hpp>
+#include <vector>
 
 // позиции отдельных фильтров в массиве статистики
 const int MASK_ALBEDO_1_FILTR = 1;
@@ -32,92 +33,95 @@ const short maxLimitOutPoint = -13;    // значение больше пред
 // Параметры фильтрации облачности
 //
 struct TFiltrParams {
-    // фильтрация по альбедо
-    int albedo1_flag[5];
-    int albedo2_flag[5];
+	static const int Size = 5;
 
-    int ndvi_flag[5];
-    int assent_flag[5];    // при фильтрации по альбедо учитывать
+    // фильтрация по альбедо
+    std::vector<int> albedo1_flag;
+    std::vector<int> albedo2_flag;
+
+    std::vector<int> ndvi_flag;
+    std::vector<int> assent_flag;    // при фильтрации по альбедо учитывать
                           // угол восхождения на Солнце
 
-    double max_albedo1[5];
-    double max_albedo2[5];
+    std::vector<double> max_albedo1;
+    std::vector<double> max_albedo2;
 
-    double min_ndvi[5], max_ndvi[5];
+    std::vector<double> min_ndvi, max_ndvi;
 
     // фильтрация по температуре
-    int temp_flag[5];
-    double min_temp[5], max_temp[5];
+    std::vector<int> temp_flag;
+    std::vector<double> min_temp, max_temp;
 
     // фильтрация по разности четвертого/пятого каналов
-    int day_delta45_flag[5];
-    double day_min_delta45[5],  day_max_delta45[5];
-    int night_delta45_flag[5];
-    double night_min_delta45[5],  night_max_delta45[5];
+    std::vector<int> day_delta45_flag;
+    std::vector<double> day_min_delta45,  day_max_delta45;
+    std::vector<int> night_delta45_flag;
+    std::vector<double> night_min_delta45,  night_max_delta45;
 
     // фильтрация по разности третьего/четвертого каналов
-    int day_delta34_flag[5];
-    double day_min_delta34[5],  day_max_delta34[5];
-    int night_delta34_flag[5];
-    double night_min_delta34[5],  night_max_delta34[5];
+    std::vector<int> day_delta34_flag;
+    std::vector<double> day_min_delta34,  day_max_delta34;
+    std::vector<int> night_delta34_flag;
+    std::vector<double> night_min_delta34,  night_max_delta34;
 
     // фильтрация по разности третьего/пятого каналов
-    int day_delta35_flag[5];
-    double day_min_delta35[5],  day_max_delta35[5];
-    int night_delta35_flag[5];
-    double night_min_delta35[5],  night_max_delta35[5];
+    std::vector<int> day_delta35_flag;
+    std::vector<double> day_min_delta35,  day_max_delta35;
+    std::vector<int> night_delta35_flag;
+    std::vector<double> night_min_delta35,  night_max_delta35;
 
     // фильтрация границ облачности
-    int cloud_border_flag[5];
-    int cloud_border_win_size[5];
-    double max_filtered_percent[5];
+    std::vector<int> cloud_border_flag;
+    std::vector<int> cloud_border_win_size;
+    std::vector<double> max_filtered_percent;
 
     // после окончания работы вывести статистику
-    int stat_flag[5];
+    std::vector<int> stat_flag;
 
     // Минимальное значение синуса  угла восхождения на солнце
     // при котором данным видимых каналов можно доверять.
     static const double sinalpha_minlimit;
 
-    static const char * FILTR_ALBEDO_1_ENABLE[5];
-    static const char * FILTR_MAX_ALBEDO_1_VALUE[5];
-    static const char * FILTR_ALBEDO_2_ENABLE[5];
-    static const char * FILTR_MAX_ALBEDO_2_VALUE[5];
-    static const char * FILTR_NDVI_ENABLE[5];
-    static const char * FILTR_MIN_NDVI_VALUE[5];
-    static const char * FILTR_MAX_NDVI_VALUE[5];
-    static const char * FILTR_ASSENT_ALBEDO_ENABLE[5];
-    static const char * FILTR_TEMP_ENABLE[5];
-    static const char * FILTR_MIN_TEMP[5];
-    static const char * FILTR_MAX_TEMP[5];
-    static const char * FILTR_DAY_DELTA45_ENABLE[5];
-    static const char * FILTR_MIN_DAY_DELTA45[5];
-    static const char * FILTR_MAX_DAY_DELTA45[5];
-    static const char * FILTR_NIGHT_DELTA45_ENABLE[5];
-    static const char * FILTR_MIN_NIGHT_DELTA45[5];
-    static const char * FILTR_MAX_NIGHT_DELTA45[5];
-    static const char * FILTR_DAY_DELTA35_ENABLE[5];
-    static const char * FILTR_MIN_DAY_DELTA35[5];
-    static const char * FILTR_MAX_DAY_DELTA35[5];
-    static const char * FILTR_NIGHT_DELTA35_ENABLE[5];
-    static const char * FILTR_MIN_NIGHT_DELTA35[5];
-    static const char * FILTR_MAX_NIGHT_DELTA35[5];
-    static const char * FILTR_DAY_DELTA34_ENABLE[5];
-    static const char * FILTR_MIN_DAY_DELTA34[5];
-    static const char * FILTR_MAX_DAY_DELTA34[5];
-    static const char * FILTR_NIGHT_DELTA34_ENABLE[5];
-    static const char * FILTR_MIN_NIGHT_DELTA34[5];
-    static const char * FILTR_MAX_NIGHT_DELTA34[5];
-    static const char * FILTR_CLOUD_BORDER_ENABLE[5];
-    static const char * FILTR_CLOUD_BORDER_WINDOW_SIZE[5];
-    static const char * FILTR_MAX_FILTERED_PERCENT[5];
-    static const char * FILTR_STAT_ENABLE[5];
+
+	static const char * FILTR_ALBEDO_1_ENABLE[Size];
+	static const char * FILTR_MAX_ALBEDO_1_VALUE[Size];
+    static const char * FILTR_ALBEDO_2_ENABLE[Size];
+    static const char * FILTR_MAX_ALBEDO_2_VALUE[Size];
+    static const char * FILTR_NDVI_ENABLE[Size];
+    static const char * FILTR_MIN_NDVI_VALUE[Size];
+    static const char * FILTR_MAX_NDVI_VALUE[Size];
+    static const char * FILTR_ASSENT_ALBEDO_ENABLE[Size];
+    static const char * FILTR_TEMP_ENABLE[Size];
+    static const char * FILTR_MIN_TEMP[Size];
+    static const char * FILTR_MAX_TEMP[Size];
+    static const char * FILTR_DAY_DELTA45_ENABLE[Size];
+    static const char * FILTR_MIN_DAY_DELTA45[Size];
+    static const char * FILTR_MAX_DAY_DELTA45[Size];
+    static const char * FILTR_NIGHT_DELTA45_ENABLE[Size];
+    static const char * FILTR_MIN_NIGHT_DELTA45[Size];
+    static const char * FILTR_MAX_NIGHT_DELTA45[Size];
+    static const char * FILTR_DAY_DELTA35_ENABLE[Size];
+    static const char * FILTR_MIN_DAY_DELTA35[Size];
+    static const char * FILTR_MAX_DAY_DELTA35[Size];
+    static const char * FILTR_NIGHT_DELTA35_ENABLE[Size];
+    static const char * FILTR_MIN_NIGHT_DELTA35[Size];
+    static const char * FILTR_MAX_NIGHT_DELTA35[Size];
+    static const char * FILTR_DAY_DELTA34_ENABLE[Size];
+    static const char * FILTR_MIN_DAY_DELTA34[Size];
+    static const char * FILTR_MAX_DAY_DELTA34[Size];
+    static const char * FILTR_NIGHT_DELTA34_ENABLE[Size];
+    static const char * FILTR_MIN_NIGHT_DELTA34[Size];
+    static const char * FILTR_MAX_NIGHT_DELTA34[Size];
+    static const char * FILTR_CLOUD_BORDER_ENABLE[Size];
+    static const char * FILTR_CLOUD_BORDER_WINDOW_SIZE[Size];
+    static const char * FILTR_MAX_FILTERED_PERCENT[Size];
+    static const char * FILTR_STAT_ENABLE[Size];
 };
 
 class TFiltrCloudy {
 public:
 
-    TFiltrCloudy( char ParametrsFiltrCloudyDir[MAX_PATH], double j_d, int month, char * mcloudy, TStraightReferencer * sr,
+    TFiltrCloudy( std::string ParametrsFiltrCloudyDir, double j_d, int month, char * mcloudy, TStraightReferencer * sr,
                   bool availableChs[5], short * calibrData[5], uint16_t maxPixelValue[5], double ka[5], double kb[5] );
 
     virtual ~TFiltrCloudy();
@@ -126,7 +130,7 @@ public:
 
 	friend void errorMessage( const char * );
 
-    void readCfg( char ParametrsFiltrCloudyDir[MAX_PATH], int month ) throw( TAccessExc, TRequestExc );
+    void readCfg( std::string &ParametrsFiltrCloudyDir, int month ) throw( TAccessExc, TRequestExc );
 
     long filtr_processing( long, long, long, long );
 
@@ -142,13 +146,7 @@ public:
 
 private:
 
-    void readFiltrParams( TCfg & ) throw ( TRequestExc );
-
-    int readFlg( TCfg &, const char *, int & ) throw ( TRequestExc );
-
-    int readDbl( TCfg &, const char *, double & ) throw ( TRequestExc );
-
-    int readInt( TCfg &, const char *, int & ) throw ( TRequestExc );
+    void readFiltrParams( const libconfig::Setting & ) throw ( TRequestExc );
 
     double angle( int, int );
 

@@ -22,6 +22,7 @@ include_directories(include)
 
 add_library(c_lib ${SOURCES})
 
+
 set_target_properties(c_lib PROPERTIES LINKER_LANGUAGE CXX)
 
 install(TARGETS c_lib     RUNTIME DESTINATION bin

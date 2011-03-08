@@ -18,6 +18,11 @@
 #include <filtrcloudy.hpp>
 #include <anglescan.hpp>
 #include <torbcorr.hpp>
+
+#include <libconfig.h++>
+using namespace libconfig;
+using namespace std;
+
 char useMsg[] = "\n\
 				Использование: aufitchip [<опции>] <файл_данных>\n\
 				<файл_данных>  Имя файла упакованных данных HRPT (*.a0).\n\
@@ -49,7 +54,7 @@ char pathStatisticaFile[MAX_PATH] = "";
 
 char pathStatFileMax[MAX_PATH] = "";
 
-char inputFileName[MAX_PATH] = "";
+std::string inputFileName;
 
 char inputFileGCP[MAX_PATH] = "";
 
@@ -208,7 +213,9 @@ int main( int argc, char * argv[] ) {
 
 	if( option_ls ) {
 		char drive[MAX_DRIVE], dir[MAX_DIR], fname[MAX_FNAME];
-		splitpath( inputFileName, drive, dir, fname, 0 );
+		#warning ацкое зло, но думать ломы
+		splitpath( const_cast<char *> (inputFileName.c_str()), drive, dir, 0, 0 );
+
 		//strlwr( fname );
 
 		int l = strlen( fname );
@@ -218,8 +225,9 @@ int main( int argc, char * argv[] ) {
 
 		// Конструирование полного имени файла лога.
 		// Проверка существования каталога fLogDir.
-		if( check_dir( fCS.fLogDir ) == 0 )
-			splitpath( fCS.fLogDir, drive, dir, 0, 0 );
+		if( check_dir( fCS.fLogDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+			splitpath( const_cast<char *>(fCS.fLogDir.c_str()), drive, dir, 0, 0 );
 		else {
 			////_fullpath( pathJobFile, ".", MAX_PATH );
 			//strcat( pathJobFile, "\\" );
@@ -709,9 +717,8 @@ int parseCommandString( int argc, char * argv[] ) {
 				}
 			}
 		} else {
-			if ( !strlen( inputFileName ) ) {
-				strncpy( inputFileName, s, MAX_PATH-1 );
-				inputFileName[MAX_PATH-1] = '\0';
+			if ( inputFileName.empty() ) {
+				inputFileName = s;
 			} else {
 				if ( !strlen( inputFileGCP ) ) {
 					strncpy( inputFileGCP, s, MAX_PATH-1 );
@@ -724,7 +731,7 @@ int parseCommandString( int argc, char * argv[] ) {
 		}
 	}
 
-	if ( !strlen( inputFileName ) )
+	if ( inputFileName.empty() )
 		return 0; // В командной строке не был указан входной файл.
 
 	//strlwr( inputFileName );
@@ -776,12 +783,15 @@ void print_LogStatisticSeriesFiles( TDataAVHRR & fDAVHRR, TAufitChipMask & fACM 
 	char * p;
 	FILE * fStat;
 	char drive[MAX_DRIVE], dir[MAX_DIR], fname[MAX_FNAME], fname_file[MAX_FNAME];
-	splitpath( inputFileName, drive, dir, fname_file, 0 );
+	#warning ацкое зло, но думать ломы
+	splitpath( const_cast<char *> (inputFileName.c_str()), drive, dir, fname_file, 0 );
 
 	// Конструирование полного имени файла лога.
 	// Проверка существования каталога fLogDir.
-	if( check_dir( fCS.fSourceDataDir ) == 0 )
-		splitpath( fCS.fSourceDataDir, drive, dir, 0, 0 );
+
+	if( check_dir( fCS.fSourceDataDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath( const_cast<char *> (fCS.fSourceDataDir.c_str()), drive, dir, 0, 0 );
 	else {
 		getcwd( pathStatisticSeries, MAX_PATH );
 		int t = strlen(pathStatisticSeries);
@@ -993,12 +1003,14 @@ void print_LogStatSeriesFiles_onGCPs( double rms, TDataAVHRR & fDAVHRR, TAufitCh
 	char * p;
 	FILE * fStat;
 	char drive[MAX_DRIVE], dir[MAX_DIR], fname[MAX_FNAME], fname_file[MAX_FNAME];
-	splitpath( inputFileName, drive, dir, fname_file, 0 );
+	#warning ацкое зло, но думать ломы
+	splitpath( const_cast<char *> (inputFileName.c_str()), drive, dir, 0, 0 );
 
 	// Конструирование полного имени файла лога.
 	// Проверка существования каталога fLogDir.
-	if( check_dir( fCS.fSourceDataDir ) == 0 )
-		splitpath( fCS.fSourceDataDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fSourceDataDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath( const_cast<char *> (fCS.fSourceDataDir.c_str()), drive, dir, 0, 0 );
 	else {
 		//_fullpath( pathStatisticSeries, ".", MAX_PATH );
 		//strcat( pathStatisticSeries, "\\" );
@@ -1107,13 +1119,15 @@ void print_LogFile( const char * message_text, bool flag_createFile, bool flag_2
 
 	if( !flag_createFile ) {
 		char drive[MAX_DRIVE], dir[MAX_DIR], fname[MAX_FNAME];
-		splitpath( inputFileName, drive, dir, fname, 0 );
+		#warning ацкое зло, но думать ломы
+		splitpath( const_cast<char *> (inputFileName.c_str()), drive, dir, 0, 0 );
 		//strlwr( fname );
 
 		// Конструирование полного имени файла лога.
 		// Проверка существования каталога fLogDir.
-		if( check_dir( fCS.fLogDir ) == 0 )
-			splitpath( fCS.fLogDir, drive, dir, 0, 0 );
+		if( check_dir( fCS.fLogDir.c_str() ) == 0 )
+			#warning ацкое зло, но думать ломы
+			splitpath( const_cast<char *> (fCS.fLogDir.c_str()), drive, dir, 0, 0 );
 		else {
 			//_fullpath( pathLogFile, ".", MAX_PATH );
 			//strcat( pathLogFile, "\\" );
@@ -1180,12 +1194,29 @@ void print_LogFile( const char * message_text, bool flag_createFile, bool flag_2
 	}
 };
 
+const string& CppGetcwd()
+{
+	static char path[MAX_PATH];
+	getcwd( path, MAX_PATH );
+	int l = strlen( path);
+	if( path[l-1] != DIRD ) {
+		path[l] = DIRD;
+		path[l+1] = '\0';
+	}
+	return string(path);
+}
+
+void LoadDirName(const Setting& set, const char* Val, string &dest)
+{
+	if( !set.lookupValue(Val, dest))
+		dest = CppGetcwd();
+}
 
 void loadCfgSet( char * argv0 ) {
 	char drive[MAX_DRIVE], dir[MAX_DIR], fname[MAX_FNAME], path[MAX_PATH];
-	char buf[COR_PARAM_NUM+1];
+	string buf;
 	int i;
-	TCfg * cfg;
+	Config cfg;
 
 	char * t;
 	if(NULL!=(t = getenv("TERM_ROOT"))){
@@ -1201,121 +1232,39 @@ void loadCfgSet( char * argv0 ) {
 		makepath( path, drive, dir, fname, "cfg" );
 	}
 
+
 	try {
-		cfg = new TCfg( path );
+		cfg.readFile( path );
 	} catch(...) {
-		cfg = new TCfg;
 		print_log( "WARNING: Конфигурационный файл не найден! Установки приняты стандартными!" );
 	}
 
-	if( cfg->containsParamWithKey( "SourceDataDir" ) ) {
-		strncpy( fCS.fSourceDataDir, cfg->getValue( "SourceDataDir" ), MAX_PATH );
-	} else {
-		getcwd( fCS.fSourceDataDir, MAX_PATH );
-		int l = strlen( fCS.fSourceDataDir );
-		if( fCS.fSourceDataDir[l-1] != DIRD ) {
-			fCS.fSourceDataDir[l] = DIRD;
-			fCS.fSourceDataDir[l+1] = '\0';
-		}
-	}
+	const Setting &root = cfg.getRoot();
 
-	if( cfg->containsParamWithKey( "TargetDataDir" ) ) {
-		strncpy( fCS.fTargetDataDir, cfg->getValue( "TargetDataDir" ), MAX_PATH );
-	} else {
-		getcwd( fCS.fTargetDataDir, MAX_PATH );
-		int l = strlen( fCS.fTargetDataDir );
-		if( fCS.fTargetDataDir[l-1] != DIRD ) {
-			fCS.fTargetDataDir[l] = DIRD;
-			fCS.fTargetDataDir[l+1] = '\0';
-		}
-	}
+	LoadDirName(root, "SourceDataDir", fCS.fSourceDataDir);
 
-	if( cfg->containsParamWithKey( "GPCXDir" ) ) {
-		strncpy( fCS.fGPCXDir, cfg->getValue( "GPCXDir" ), MAX_PATH );
-	} else {
-		getcwd( fCS.fGPCXDir, MAX_PATH );
-		int l = strlen( fCS.fGPCXDir );
-		if( fCS.fGPCXDir[l-1] != DIRD ) {
-			fCS.fGPCXDir[l] = DIRD;
-			fCS.fGPCXDir[l+1] = '\0';
-		}
-	}
+	LoadDirName(root, "TargetDataDir", fCS.fTargetDataDir);
 
-	if( cfg->containsParamWithKey( "LogDir" ) ) {
-		strncpy( fCS.fLogDir, cfg->getValue( "LogDir" ), MAX_PATH );
-	} else {
-		getcwd( fCS.fLogDir, MAX_PATH );
-		int l = strlen( fCS.fLogDir );
-		if( fCS.fLogDir[l-1] != DIRD ) {
-			fCS.fLogDir[l] = DIRD;
-			fCS.fLogDir[l+1] = '\0';
-		}
-	}
+	LoadDirName(root, "GPCXDir", fCS.fGPCXDir);
 
-	if( cfg->containsParamWithKey( "StatDir" ) ) {
-		strncpy( fCS.fStatDir, cfg->getValue( "StatDir" ), MAX_PATH );
-	} else {
-		getcwd( fCS.fStatDir, MAX_PATH );
-		int l = strlen( fCS.fStatDir );
-		if( fCS.fStatDir[l-1] != DIRD ) {
-			fCS.fStatDir[l] = DIRD;
-			fCS.fStatDir[l+1] = '\0';
-		}
-	}
+	LoadDirName(root, "LogDir", fCS.fLogDir);
 
-	if( cfg->containsParamWithKey( "Mask_and_ChipBaseDir" ) ) {
-		strncpy( fCS.fMaskandChipBaseDir, cfg->getValue( "Mask_and_ChipBaseDir" ), MAX_PATH );
-	} else {
-		getcwd( fCS.fMaskandChipBaseDir, MAX_PATH );
-		int l = strlen( fCS.fMaskandChipBaseDir );
-		if( fCS.fMaskandChipBaseDir[l-1] != DIRD ) {
-			fCS.fMaskandChipBaseDir[l] = DIRD;
-			fCS.fMaskandChipBaseDir[l+1] = '\0';
-		}
-	}
+	LoadDirName(root, "StatDir", fCS.fStatDir);
 
-	if( cfg->containsParamWithKey( "ParametrsFiltrCloudyDir" ) ) {
-		strncpy( fCS.ParametrsFiltrCloudyDir, cfg->getValue( "ParametrsFiltrCloudyDir" ), MAX_PATH );
-	} else {
-		getcwd( fCS.ParametrsFiltrCloudyDir, MAX_PATH );
-		int l = strlen( fCS.ParametrsFiltrCloudyDir );
-		if( fCS.ParametrsFiltrCloudyDir[l-1] != DIRD ) {
-			fCS.ParametrsFiltrCloudyDir[l] = DIRD;
-			fCS.ParametrsFiltrCloudyDir[l+1] = '\0';
-		}
-	}
+	LoadDirName(root, "Mask_and_ChipBaseDir", fCS.fMaskandChipBaseDir);
 
-	if( cfg->containsParamWithKey( "MinMethod" ) ) {
-		fCS.fMinMethod = atoi( cfg->getValue( "MinMethod" ) );
-		if( fCS.fMinMethod != 1 && fCS.fMinMethod != 2 ) {
-			fCS.fMinMethod = 2;    // Nelder-Mead
-		}
-	} else {
+	LoadDirName(root, "ParametrsFiltrCloudyDir", fCS.ParametrsFiltrCloudyDir);
+
+
+	if( !root.lookupValue("MinMethod", fCS.fMinMethod)) {
 		fCS.fMinMethod = 2;         // Nelder-Mead
 	}
 
-	if( cfg->containsParamWithKey( "MinParams" ) ) {
-		strncpy( buf, cfg->getValue( "MinParams" ), COR_PARAM_NUM );
-		buf[11] = 0;
-		if( strlen( buf ) < COR_PARAM_NUM ) {   // строка, задающая флаги минимизируемых параметров - неправильная
-			fCS.fMinParams[0] = 0;
-			fCS.fMinParams[1] = 0;
-			fCS.fMinParams[2] = 1;
-			fCS.fMinParams[3] = 1;
-			fCS.fMinParams[4] = 1;
-			fCS.fMinParams[5] = 0;
-			fCS.fMinParams[6] = 0;
-			fCS.fMinParams[7] = 0;
-			fCS.fMinParams[8] = 0;
-			fCS.fMinParams[9] = 0;
-			fCS.fMinParams[10] = 0;
-			fCS.fMinParams[11] = 0;
-		} else {   // разбираем строку
-			for( i = 0; i < COR_PARAM_NUM; i++ ) {
-				fCS.fMinParams[i] = (buf[i] == '0') ? 0 : 1;
-			}
+	if( root.lookupValue( "MinParams", buf ) && buf.size() >= COR_PARAM_NUM ) {
+	   // разбираем строку
+		for( i = 0; i <= COR_PARAM_NUM; i++ ) {
+			fCS.fMinParams[i] = (buf[i] == '0') ? 0 : 1;
 		}
-
 	} else {
 		fCS.fMinParams[0] = 0;
 		fCS.fMinParams[1] = 0;
@@ -1331,30 +1280,15 @@ void loadCfgSet( char * argv0 ) {
 		fCS.fMinParams[11] = 0;
 	}
 
-	if( cfg->containsParamWithKey( "fMaxNavigationErrorLine" ) ) {
-		fCS.fMaxNavigationErrorLine = atoi( cfg->getValue( "fMaxNavigationErrorLine" ) );
-		if( fCS.fMaxNavigationErrorLine > 20 ) {
-			fCS.fMaxNavigationErrorLine = 15;
-		}
-	} else {
+	if( !root.lookupValue("fMaxNavigationErrorLine", fCS.fMaxNavigationErrorLine) || fCS.fMaxNavigationErrorLine > 20){
 		fCS.fMaxNavigationErrorLine = 15;
 	}
 
-	if( cfg->containsParamWithKey( "fMaxNavigationErrorColumn" ) ) {
-		fCS.fMaxNavigationErrorColumn = atoi( cfg->getValue( "fMaxNavigationErrorColumn" ) );
-		if( fCS.fMaxNavigationErrorColumn > 15 ) {
-			fCS.fMaxNavigationErrorColumn = 10;
-		}
-	} else {
-		fCS.fMaxNavigationErrorColumn = 10;
+	if( !root.lookupValue("fMaxNavigationErrorColumn", fCS.fMaxNavigationErrorColumn ) || fCS.fMaxNavigationErrorColumn > 15){
+		fCS.fMaxNavigationErrorColumn  = 10;
 	}
 
-	if( cfg->containsParamWithKey( "fMaskScale" ) ) {
-		fCS.fMaskScale = atoi( cfg->getValue( "fMaskScale" ) );
-		if( fCS.fMaskScale > 10 ) {
-			fCS.fMaskScale = 4;
-		}
-	} else {
+	if( !root.lookupValue("fMaskScale", fCS.fMaskScale ) || fCS.fMaskScale > 10){
 		fCS.fMaskScale = 4;
 	}
 	/*
@@ -1368,51 +1302,31 @@ void loadCfgSet( char * argv0 ) {
 	fCS.fFiltrCloudyforChips = 2;
 	//    }
 
-	if( cfg->containsParamWithKey( "fMaxPercentageCloudy" ) ) {
-		fCS.fMaxPercentageCloudy = atof( cfg->getValue( "fMaxPercentageCloudy" ) );
-		if( fCS.fMaxPercentageCloudy < .0 || fCS.fMaxPercentageCloudy > 90. ) {
-			fCS.fMaxPercentageCloudy = 70.;
-		}
-	} else {
+	if( !root.lookupValue("fMaxPercentageCloudy", fCS.fMaxPercentageCloudy) ||
+		fCS.fMaxPercentageCloudy < .0 || fCS.fMaxPercentageCloudy > 90. ) {
 		fCS.fMaxPercentageCloudy = 70.;
 	}
 
-	if( cfg->containsParamWithKey( "fRepeatCalcShiftsforChips" ) ) {
-		fCS.fRepeatCalcShiftsforChips = atoi( cfg->getValue( "fRepeatCalcShiftsforChips" ) );
-		if( fCS.fRepeatCalcShiftsforChips != 0 && fCS.fRepeatCalcShiftsforChips != 1 ) {
-			fCS.fRepeatCalcShiftsforChips = 1;
-		}
-	} else {
+	if( !root.lookupValue("fRepeatCalcShiftsforChips", fCS.fRepeatCalcShiftsforChips)||
+		fCS.fRepeatCalcShiftsforChips != 0 && fCS.fRepeatCalcShiftsforChips != 1 ) {
 		fCS.fRepeatCalcShiftsforChips = 1;
 	}
 
-	if( cfg->containsParamWithKey( "fStatisticSignificanceThreshold" ) ) {
-		fCS.fStatisticSignificanceThreshold = atof( cfg->getValue( "fStatisticSignificanceThreshold" ) );
-		if( fCS.fStatisticSignificanceThreshold < 0.01 || fCS.fStatisticSignificanceThreshold > 2. ) {
-			fCS.fStatisticSignificanceThreshold = 0.4;
-		}
-	} else {
+	if( !root.lookupValue("fStatisticSignificanceThreshold", fCS.fStatisticSignificanceThreshold) ||
+		fCS.fStatisticSignificanceThreshold < 0.01 || fCS.fStatisticSignificanceThreshold > 2. ) {
 		fCS.fStatisticSignificanceThreshold = 0.4;
 	}
-	if( cfg->containsParamWithKey( "fLinRegresCoeff_dX" ) ) {
-		fCS.fLinRegresCoeff_dX = atof( cfg->getValue( "fLinRegresCoeff_dX" ) );
-		if( fCS.fLinRegresCoeff_dX < 0.05 || fCS.fLinRegresCoeff_dX > 1.05 ) {
+
+	if( !root.lookupValue("fLinRegresCoeff_dX", fCS.fLinRegresCoeff_dX) ||
+		fCS.fLinRegresCoeff_dX < 0.05 || fCS.fLinRegresCoeff_dX > 1.05 ) {
 			fCS.fLinRegresCoeff_dX = 0.7;
-		}
-	} else {
-		fCS.fLinRegresCoeff_dX = 0.7;
 	}
 
-	if( cfg->containsParamWithKey( "fLinRegresCoeff_dY" ) ) {
-		fCS.fLinRegresCoeff_dY = atof( cfg->getValue( "fLinRegresCoeff_dY" ) );
-		if( fCS.fLinRegresCoeff_dY < 0.05 || fCS.fLinRegresCoeff_dY > 1.05 ) {
+	if( !root.lookupValue("fLinRegresCoeff_dY", fCS.fLinRegresCoeff_dY) ||
+		fCS.fLinRegresCoeff_dY < 0.05 || fCS.fLinRegresCoeff_dY > 1.05 ) {
 			fCS.fLinRegresCoeff_dY = 0.95;
-		}
-	} else {
-		fCS.fLinRegresCoeff_dY = 0.95;
 	}
 
-	delete cfg;
 };
 
 
@@ -3334,15 +3248,17 @@ void save_autoGCP( bool flag_mr, TDataAVHRR & fDAVHRR, TAufitChipMask & fACM ) t
 		return; // Нельзя записывать пустой набор autoGCP.
 
 	char drive[MAX_DRIVE], dir[MAX_DIR+100], fname[MAX_FNAME], gcpfilepath[MAX_PATH];
-	splitpath( inputFileName, drive, dir, fname, 0 );
+	#warning ацкое зло, но думать ломы
+	splitpath(const_cast<char *>(inputFileName.c_str()) , drive, dir, fname, 0 );
 	//strlwr( fname );
 
 	//int l = strlen( fname ); - unused
 
 	// Конструирование полного имени файла GCPs.
 	// Проверка существования каталога fTargetDataDir.
-	if( check_dir( fCS.fTargetDataDir ) == 0 )
-		splitpath( fCS.fTargetDataDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fTargetDataDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fTargetDataDir.c_str())  , drive, dir, 0, 0 );
 	else {
 		getcwd( gcpfilepath, MAX_PATH );
 		int t = strlen(gcpfilepath);
@@ -3399,7 +3315,9 @@ void save_autoGCP( uint8_t passage, TDataAVHRR & fDAVHRR, TAufitChipMask & fACM 
 	print_log( "Запись файла с реперными точками." );
 
 	char drive[MAX_DRIVE], dir[MAX_DIR+100], fname[MAX_FNAME], gcpfilepath[MAX_PATH];
-	splitpath( inputFileName, 0, 0, fname, 0 );
+
+	#warning ацкое зло, но думать ломы
+	splitpath(const_cast<char *>(inputFileName.c_str()) , 0, 0, fname, 0 );
 	//strlwr( fname );
 
 	if( passage == 2 ) {
@@ -3411,8 +3329,9 @@ void save_autoGCP( uint8_t passage, TDataAVHRR & fDAVHRR, TAufitChipMask & fACM 
 
 	// Конструирование полного имени файла GCPs.
 	// Проверка существования каталога fTargetDataDir.
-	if( check_dir( fCS.fStatDir ) == 0 )
-		splitpath( fCS.fStatDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fStatDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fStatDir.c_str()) , drive, dir, 0, 0 );
 	else {
 		getcwd( gcpfilepath, MAX_PATH );
 		int t = strlen(gcpfilepath);
@@ -3467,7 +3386,8 @@ void saveGCP( int pref1, long pref2, TDataAVHRR & fDAVHRR, TAufitChipMask & fACM
 		return; // Нельзя записывать пустой набор GCP.
 
 	char drive[MAX_DRIVE], dir[MAX_DIR+100], fname[MAX_FNAME], gcpfilepath[MAX_PATH];
-	splitpath( inputFileName, drive, dir, fname, 0 );
+	#warning ацкое зло, но думать ломы
+	splitpath(const_cast<char *>(inputFileName.c_str()), drive, dir, fname, 0 );
 	//strlwr( fname );
 
 	int l = strlen( fname );
@@ -3477,8 +3397,9 @@ void saveGCP( int pref1, long pref2, TDataAVHRR & fDAVHRR, TAufitChipMask & fACM
 
 	// Конструирование полного имени файла GCPs.
 	// Проверка существования каталога fTargetDataDir.
-	if( check_dir( fCS.fGPCXDir ) == 0 )
-		splitpath( fCS.fGPCXDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fGPCXDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fGPCXDir.c_str()), drive, dir, 0, 0 );
 	else {
 		getcwd( gcpfilepath, MAX_PATH );
 		int t = strlen(gcpfilepath);
@@ -3542,7 +3463,8 @@ void save_autoGCP( bool flag_mr, TDataAVHRR & fDAVHRR, int n, TDChip * chips ) t
 		return; // Нельзя записывать пустой набор autoGCP.
 
 	char drive[MAX_DRIVE], dir[MAX_DIR+100], fname[MAX_FNAME], gcpfilepath[MAX_PATH];
-	splitpath( inputFileName, drive, dir, fname, 0 );
+	#warning ацкое зло, но думать ломы
+	splitpath(const_cast<char *>(inputFileName.c_str()), drive, dir, fname, 0 );
 	//strlwr( fname );
 	/*
 	    int l = strlen( fname );
@@ -3553,8 +3475,9 @@ void save_autoGCP( bool flag_mr, TDataAVHRR & fDAVHRR, int n, TDChip * chips ) t
 	*/
 	// Конструирование полного имени файла GCPs.
 	// Проверка существования каталога fTargetDataDir.
-	if( check_dir( fCS.fGPCXDir ) == 0 )
-		splitpath( fCS.fGPCXDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fGPCXDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fGPCXDir.c_str()), drive, dir, 0, 0 );
 	else {
 		getcwd( gcpfilepath, MAX_PATH );
 		int t = strlen(gcpfilepath);
@@ -3609,7 +3532,8 @@ void save_autoGCP_c( int n_comb, TDataAVHRR & fDAVHRR, int n, TDChip * chips ) t
 		return; // Нельзя записывать пустой набор autoGCP.
 
 	char drive[MAX_DRIVE], dir[MAX_DIR+100], fname[MAX_FNAME], gcpfilepath[MAX_PATH];
-	splitpath( inputFileName, drive, dir, fname, 0 );
+	#warning ацкое зло, но думать ломы
+	splitpath(const_cast<char *>(inputFileName.c_str()), drive, dir, fname, 0 );
 	//strlwr( fname );
 
 	int l = strlen( fname );
@@ -3619,8 +3543,9 @@ void save_autoGCP_c( int n_comb, TDataAVHRR & fDAVHRR, int n, TDChip * chips ) t
 
 	// Конструирование полного имени файла GCPs.
 	// Проверка существования каталога fTargetDataDir.
-	if( check_dir( fCS.fGPCXDir ) == 0 )
-		splitpath( fCS.fGPCXDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fGPCXDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fGPCXDir.c_str()) , drive, dir, 0, 0 );
 	else {
 		getcwd( gcpfilepath, MAX_PATH );
 		int t = strlen(gcpfilepath);
@@ -3755,13 +3680,15 @@ void save_Correction( TDataAVHRR & fDAVHRR, TAufitChipMask & fACM,
 		return; // Нельзя записывать коррекцию при пустом наборе autoGCPs.
 
 	char drive[MAX_DRIVE], dir[MAX_DIR+100], fname[MAX_FNAME], corfilepath[MAX_PATH];
-	splitpath( inputFileName, 0, 0, fname, 0 );
+	#warning ацкое зло, но думать ломы
+	splitpath(const_cast<char *>(inputFileName.c_str()), 0, 0, fname, 0 );
 	//strlwr( fname );
 
 	// Конструирование полного имени файла с autoGCPs.
 	// Проверка существования каталога fSourceDataDir.
-	if( check_dir( fCS.fSourceDataDir ) == 0 )
-		splitpath( fCS.fSourceDataDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fSourceDataDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fSourceDataDir.c_str()) , drive, dir, 0, 0 );
 	else {
 		getcwd( corfilepath, MAX_PATH );
 		int t = strlen(corfilepath);
@@ -3816,12 +3743,14 @@ void save_Correction( TDataAVHRR & fDAVHRR, int n, TDChip * chips ) throw( TAcce
 		return; // Нельзя записывать коррекцию при пустом наборе autoGCPs.
 
 	char drive[MAX_DRIVE], dir[MAX_DIR+100], fname[MAX_FNAME], corfilepath[MAX_PATH];
-	splitpath( inputFileName, drive, dir, fname, 0 );
+	#warning ацкое зло, но думать ломы
+	splitpath(const_cast<char *>(inputFileName.c_str()) , drive, dir, fname, 0 );
 	//strlwr( fname );
 	// Конструирование полного имени файла с autoGCPs.
 	// Проверка существования каталога fTargetDataDir.
-	if( check_dir( fCS.fGPCXDir ) == 0 )
-		splitpath( fCS.fGPCXDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fSourceDataDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fSourceDataDir.c_str()) , drive, dir, 0, 0 );
 	else {
 		getcwd( corfilepath, MAX_PATH );
 		int t = strlen(corfilepath);
@@ -3871,7 +3800,7 @@ void save_Correction_c( int n_comb, TDataAVHRR & fDAVHRR, TAufitChipMask & fACM 
 		return; // Нельзя записывать коррекцию при пустом наборе autoGCPs.
 
 	char drive[MAX_DRIVE], dir[MAX_DIR+100], fname[MAX_FNAME], corfilepath[MAX_PATH];
-	splitpath( inputFileName, drive, dir, fname, 0 );
+	splitpath(const_cast<char *>(inputFileName.c_str()) , drive, dir, fname, 0 );
 	//strlwr( fname );
 
 	int l = strlen( fname );
@@ -3881,8 +3810,9 @@ void save_Correction_c( int n_comb, TDataAVHRR & fDAVHRR, TAufitChipMask & fACM 
 
 	// Конструирование полного имени файла с autoGCPs.
 	// Проверка существования каталога fTargetDataDir.
-	if( check_dir( fCS.fGPCXDir ) == 0 )
-		splitpath( fCS.fGPCXDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fGPCXDir .c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fGPCXDir.c_str()) , drive, dir, 0, 0 );
 	else {
 		getcwd( corfilepath, MAX_PATH );
 		int t = strlen(corfilepath);
@@ -3935,7 +3865,7 @@ void save_Correction_c( int n_comb, TDataAVHRR & fDAVHRR, TAufitChipMask & fACM,
 	//    print_log( "Запись файла с параметрами корррекции." );
 
 	char drive[MAX_DRIVE], dir[MAX_DIR+100], fname[MAX_FNAME], corfilepath[MAX_PATH];
-	splitpath( inputFileName, 0, 0, fname, 0 );
+	splitpath(const_cast<char *>(inputFileName.c_str()) , drive, dir, fname, 0 );
 	//strlwr( fname );
 
 	int l = strlen( fname );
@@ -3945,8 +3875,9 @@ void save_Correction_c( int n_comb, TDataAVHRR & fDAVHRR, TAufitChipMask & fACM,
 
 	// Конструирование полного имени файла с autoGCPs.
 	// Проверка существования каталога fTargetDataDir.
-	if( check_dir( fCS.fStatDir ) == 0 )
-		splitpath( fCS.fStatDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fStatDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fStatDir.c_str()) , drive, dir, 0, 0 );
 	else {
 		getcwd( corfilepath, MAX_PATH );
 		int t = strlen(corfilepath);
@@ -3999,7 +3930,7 @@ void save_Correction_c( int n_comb, TDataAVHRR & fDAVHRR, int n, TDChip * chips 
 		return; // Нельзя записывать коррекцию при пустом наборе autoGCPs.
 
 	char drive[MAX_DRIVE], dir[MAX_DIR+100], fname[MAX_FNAME], corfilepath[MAX_PATH];
-	splitpath( inputFileName, drive, dir, fname, 0 );
+	splitpath(const_cast<char *>(inputFileName.c_str()) , drive, dir, fname, 0 );
 	//strlwr( fname );
 
 	int l = strlen( fname );
@@ -4009,8 +3940,9 @@ void save_Correction_c( int n_comb, TDataAVHRR & fDAVHRR, int n, TDChip * chips 
 
 	// Конструирование полного имени файла с autoGCPs.
 	// Проверка существования каталога fTargetDataDir.
-	if( check_dir( fCS.fGPCXDir ) == 0 )
-		splitpath( fCS.fGPCXDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fGPCXDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fGPCXDir.c_str()) , drive, dir, 0, 0 );
 	else {
 		getcwd( corfilepath, MAX_PATH );
 		int t = strlen(corfilepath);
@@ -4072,7 +4004,7 @@ void save_intervGCP( bool flag_rejct, const char * sign_record, TDataAVHRR & fDA
 	dayToDate( fDAVHRR.fNIP->fYear, int(fDAVHRR.fNIP->fYearTime), &month, &date );
 
 	char pathStatFileGCP[MAX_PATH], drive[MAX_DRIVE], dir[MAX_DIR], fname[MAX_FNAME];
-	splitpath( inputFileName, 0, 0, fname, 0 );
+	splitpath(const_cast<char *>(inputFileName.c_str()) , drive, dir, fname, 0 );
 	//strlwr( fname );
 
 	int l = strlen( fname );
@@ -4082,8 +4014,9 @@ void save_intervGCP( bool flag_rejct, const char * sign_record, TDataAVHRR & fDA
 
 	// Конструирование полного имени файла статистики.
 	// Проверка существования каталога fStatDir.
-	if( check_dir( fCS.fStatDir ) == 0 )
-		splitpath( fCS.fStatDir, drive, dir, 0, 0 );
+	if( check_dir( fCS.fStatDir.c_str() ) == 0 )
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(fCS.fStatDir.c_str()) , drive, dir, 0, 0 );
 	else {
 		getcwd( pathStatFileGCP, MAX_PATH );
 		int t = strlen(pathStatFileGCP);
@@ -4174,13 +4107,15 @@ void save_StatMaxGCP( bool flag_rejct, uint8_t nf, TDataAVHRR & fDAVHRR, TAufitC
 		dayToDate( fDAVHRR.fNIP->fYear, int(fDAVHRR.fNIP->fYearTime), &month, &date );
 
 		char drive[MAX_DRIVE], dir[MAX_DIR], fname[MAX_FNAME];
-		splitpath( inputFileName, 0, 0, fname, 0 );
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(inputFileName.c_str()) , drive, dir, fname, 0 );
 		//strlwr( fname );
 
 		// Конструирование полного имени файла статистики.
 		// Проверка существования каталога fStatDir.
-		if( check_dir( fCS.fStatDir ) == 0 )
-			splitpath( fCS.fStatDir, drive, dir, 0, 0 );
+		if( check_dir( fCS.fStatDir.c_str() ) == 0 )
+			#warning ацкое зло, но думать ломы
+			splitpath(const_cast<char *>(fCS.fStatDir.c_str()) , drive, dir, 0, 0 );
 		else {
 			getcwd( pathStatFileMax, MAX_PATH );
 			int t = strlen(pathStatFileMax);
@@ -4284,7 +4219,8 @@ void saveStatisticaContour( TDataAVHRR & fDAVHRR, TAufitChipMask & fACM ) throw(
 		dayToDate( fDAVHRR.fNIP->fYear, int(fDAVHRR.fNIP->fYearTime), &month, &date );
 
 		char drive[MAX_DRIVE], dir[MAX_DIR], fname[MAX_FNAME];
-		splitpath( inputFileName, 0, 0, fname, 0 );
+		#warning ацкое зло, но думать ломы
+		splitpath(const_cast<char *>(inputFileName.c_str()) , drive, dir, fname, 0 );
 		//strlwr( fname );
 
 		int l = strlen( fname );
@@ -4294,8 +4230,9 @@ void saveStatisticaContour( TDataAVHRR & fDAVHRR, TAufitChipMask & fACM ) throw(
 
 		// Конструирование полного имени файла статистики.
 		// Проверка существования каталога fLogDir.
-		if( check_dir( fCS.fStatDir ) == 0 )
-			splitpath( fCS.fStatDir, drive, dir, 0, 0 );
+		if( check_dir( fCS.fStatDir.c_str() ) == 0 )
+			#warning ацкое зло, но думать ломы
+			splitpath(const_cast<char *>(fCS.fStatDir.c_str()) , drive, dir, 0, 0 );
 		else {
 			getcwd( pathStatisticaFile, MAX_PATH );
 			int t = strlen(pathStatisticaFile);
@@ -4374,7 +4311,7 @@ void saveStatisticaContour( TDataAVHRR & fDAVHRR, TAufitChipMask & fACM ) throw(
 
 // ----------------------------------------------------------------------------------
 
-TDataAVHRR :: TDataAVHRR( const char * inputFilePath, bool flag_load ) :
+TDataAVHRR :: TDataAVHRR( const string& inputFilePath, bool flag_load ) :
 
 fISP( 0 ),
 fNIP( 0 ),
@@ -4403,8 +4340,8 @@ error_roll(.0), error_pitch(.0), error_yaw(.0), max_error_angles(.0) {
 	fChannels_forCalcGCPs[1] = false;
 
 	fDataFilePath[0] = 0;
-	if( inputFilePath ) {  // если программа запущена в обычном режиме и был указан файл данных
-		strncpy( fDataFilePath, inputFilePath, MAX_PATH-1 );
+	if( !inputFilePath.empty() ) {  // если программа запущена в обычном режиме и был указан файл данных
+		strncpy( fDataFilePath, inputFilePath.c_str(), MAX_PATH-1 );
 		fDataFilePath[MAX_PATH-1] = '\0';
 	}
 
