@@ -1,5 +1,7 @@
 /build
 /_build_
+.kdev_include_paths
+.swp.*
 .svn/
 cmake*
 /distr
