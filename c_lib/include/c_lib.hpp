@@ -15,5 +15,7 @@
 #include "c_lib/c_b0noaa.hpp"
 #include "c_lib/c_b0proj.hpp"
 
+#include "c_lib/strformat.hpp"
+
 #include "c_lib/c_misc.hpp"
 #include "string"

@@ -3,8 +3,6 @@
 #ifndef _CALIBR_HPP_
 #define _CALIBR_HPP_
 
-#include "../strformat/strformat.hpp"
-
 //#include <cmath>
 //#include <stdarg.h>
 //#include <cstdarg>

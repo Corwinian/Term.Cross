@@ -80,7 +80,6 @@ configure_file(${TERM_CROSS_INCLUDE}/config.h.in ${TERM_CROSS_INCLUDE}/tc_config
 
 include_directories(${TERM_CROSS_INCLUDE})
 
-add_subdirectory(strformat)
 add_subdirectory(c_lib)
 add_subdirectory(log)
 add_subdirectory(nrc)

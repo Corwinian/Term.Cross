@@ -24,7 +24,6 @@ foreach(SRCFILE ${RESOURCES})
 endforeach(SRCFILE)
 
 include_directories (include)
-include_directories (${STRFORMAT_SOURCE_DIR})
 include_directories (${C_LIB_SOURCE_DIR}/include)
 include_directories (${LOG_SOURCE_DIR}/include)
 include_directories (${ORBMODEL_SOURCE_DIR}/include)
@@ -45,8 +44,6 @@ set(DSTLN_LIBS
  log
  orbmodel
  y_util
- strformat
- 
 )
 
 target_link_libraries (calibr ${DSTLN_LIBS})
