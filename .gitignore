@@ -5,3 +5,10 @@
 .svn/
 cmake*
 /distr
+CMakeFiles
+Makefile
+CPackConfig.cmake
+CPackSourceConfig.cmake
+make.log
+make_install.log
+
